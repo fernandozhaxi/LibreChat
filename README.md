@@ -175,3 +175,12 @@ For new features, components, or extensions, please open an issue and discuss be
 `npm run frontend:dev`
 
 访问 http://localhost:3090/
+
+# 同步源仓库
+
+- 获取源仓库更新
+  - 这一步之需要设置一次
+    `git remote add upstream https://github.com/danny-avila/LibreChat.git`
+  - 后续之需要执行下面的步骤
+    `git fetch upstream`
+    `git merge upstream/main`
