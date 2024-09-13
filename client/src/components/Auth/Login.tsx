@@ -17,6 +17,13 @@ function Login() {
   const [showAccountLogin, setShowAccountLogin] = useState(false);
   const isInMiniWechat = isMiniWechat();
 
+  const handleWechatLogin = () => {
+    console.log('微信小程序登录');
+    // uni.postMessage({
+    //   data: { text: '123' }
+    // });
+  }
+
   return (
     <>
       {error && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
@@ -26,7 +33,7 @@ function Login() {
           <button
             aria-label="Sign in"
             data-testid="login-button"
-            type="submit"
+            onClick={handleWechatLogin}
             className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
           >
             微信授权登录
