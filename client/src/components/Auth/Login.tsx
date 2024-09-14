@@ -18,11 +18,10 @@ function Login() {
   const isInMiniWechat = isMiniWechat();
 
   const handleWechatLogin = () => {
-    console.log('微信小程序登录');
-    // uni.postMessage({
-    //   data: { text: '123' }
-    // });
-  }
+    uni.navigateTo({
+      url: '/pages/auth/index',
+    });
+  };
 
   return (
     <>
@@ -65,9 +64,7 @@ function Login() {
       {startupConfig?.registrationEnabled && (
         <div className='flex justify-between items-center text-sm font-light text-gray-700 dark:text-white'>
           {
-            isInMiniWechat && showAccountLogin && <span onClick={() => {
-              setShowAccountLogin(false);
-            }}>微信登录</span>
+            isInMiniWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
           }
 
           {

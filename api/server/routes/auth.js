@@ -7,6 +7,7 @@ const {
 } = require('~/server/controllers/AuthController');
 const { loginController } = require('~/server/controllers/auth/LoginController');
 const { logoutController } = require('~/server/controllers/auth/LogoutController');
+const { wxLoginController } = require('~/server/controllers/auth/WXLoginController');
 const {
   checkBan,
   loginLimiter,
@@ -57,5 +58,7 @@ router.post(
   resetPasswordRequestController,
 );
 router.post('/resetPassword', checkBan, validatePasswordReset, resetPasswordController);
+
+router.post('/wxminiLogin', loginLimiter, checkBan, wxLoginController);
 
 module.exports = router;
