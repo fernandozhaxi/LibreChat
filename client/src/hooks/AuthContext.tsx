@@ -8,7 +8,7 @@ import {
   createContext,
 } from 'react';
 import { useRecoilState } from 'recoil';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { setTokenHeader, SystemRoles } from 'librechat-data-provider';
 import {
   useGetUserQuery,
@@ -42,7 +42,6 @@ const AuthContextProvider = ({
   });
 
   const navigate = useNavigate();
-
   const setUserContext = useCallback(
     (userContext: TUserContext) => {
       const { token, isAuthenticated, user, redirect } = userContext;
@@ -128,6 +127,20 @@ const AuthContextProvider = ({
       },
     });
   }, []);
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const refresh_token = searchParams.get('refresh_token');
+    if (token && refresh_token) {
+      console.log('token', token);
+      console.log('refresh_token', refresh_token);
+
+      window.localStorage.setItem('refresh_token', refresh_token);
+      setUserContext({ token, isAuthenticated: true, redirect: '/c/new' });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (userQuery.data) {

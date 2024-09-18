@@ -63,7 +63,12 @@ async function _patch(url: string, data?: any) {
 let isRefreshing = false;
 let failedQueue: { resolve: (value?: any) => void; reject: (reason?: any) => void }[] = [];
 
-const refreshToken = (retry?: boolean) => _post(endpoints.refreshToken(retry));
+const refreshToken = (retry?: boolean) => {
+  const data = {
+    refreshToken: window.localStorage.getItem('refresh_token') || '',
+  };
+  return _post(endpoints.refreshToken(retry), data);
+};
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {

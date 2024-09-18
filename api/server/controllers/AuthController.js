@@ -54,7 +54,13 @@ const resetPasswordController = async (req, res) => {
 };
 
 const refreshController = async (req, res) => {
-  const refreshToken = req.headers.cookie ? cookies.parse(req.headers.cookie).refreshToken : null;
+  let refreshToken = req.headers.cookie ? cookies.parse(req.headers.cookie).refreshToken : null;
+
+  // 如果没有从cookie中取到refreshToken，就从data中取
+  if (!refreshToken) {
+    refreshToken = req.body.refreshToken;
+  }
+
   if (!refreshToken) {
     return res.status(200).send('Refresh token not provided');
   }
@@ -65,7 +71,6 @@ const refreshController = async (req, res) => {
     if (!user) {
       return res.status(401).redirect('/login');
     }
-
     const userId = payload.id;
 
     if (process.env.NODE_ENV === 'CI') {

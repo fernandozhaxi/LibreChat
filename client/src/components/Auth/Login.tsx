@@ -18,7 +18,7 @@ function Login() {
   const isInMiniWechat = isMiniWechat();
 
   const handleWechatLogin = () => {
-    uni.navigateTo({
+    uni.redirectTo({
       url: '/pages/auth/index',
     });
   };
