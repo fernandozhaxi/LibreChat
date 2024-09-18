@@ -59,6 +59,6 @@ router.post(
 );
 router.post('/resetPassword', checkBan, validatePasswordReset, resetPasswordController);
 
-router.post('/wxminiLogin', loginLimiter, checkBan, wxLoginController);
+router.get('/wxminiLogin', loginLimiter, checkBan, wxLoginController);
 
 module.exports = router;
