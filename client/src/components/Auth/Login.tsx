@@ -5,7 +5,7 @@ import { ErrorMessage } from '~/components/Auth/ErrorMessage';
 import { getLoginError } from '~/utils';
 import { useLocalize } from '~/hooks';
 import LoginForm from './LoginForm';
-import { isMiniWechat } from '~/utils/wechat';
+import { isInWechatEnv, isInMiniWechatEnv } from '~/utils/wechat';
 import { Button } from '../ui';
 import { useState } from 'react';
 
@@ -15,12 +15,27 @@ function Login() {
   const { startupConfig } = useOutletContext<TLoginLayoutContext>();
 
   const [showAccountLogin, setShowAccountLogin] = useState(false);
-  const isInMiniWechat = isMiniWechat();
+  const isInWechat = isInWechatEnv();
+  const isInMiniWechat = isInMiniWechatEnv();
+  console.log('isInWechat', isInWechat);
 
-  const handleWechatLogin = () => {
-    uni.redirectTo({
-      url: '/pages/auth/index',
-    });
+  const handleWechatMiniLogin = () => {
+    // uni.redirectTo({
+    //   url: '/pages/auth/index',
+    // });
+    handleWechatAuthLogin();
+  };
+
+  const handleWechatAuthLogin = () => {
+    const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
+    const appid = 'appid=wx4cc329e7c19c2812';
+    const redirect = '&redirect_uri=https://1ce6374ed662.vicp.fun/';
+    const type = '&response_type=code';
+    const scope = '&scope=snsapi_userinfo';
+    const state = '&state=STATE';
+    const queryUrl = url + appid + type + scope + state + redirect;
+    console.log(queryUrl);
+    window.location.href = queryUrl + '#wechat_redirect';
   };
 
   return (
@@ -28,15 +43,24 @@ function Login() {
       {error && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
 
       {
-        isInMiniWechat && !showAccountLogin ? <div>
-          <button
-            aria-label="Sign in"
-            data-testid="login-button"
-            onClick={handleWechatLogin}
-            className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
-          >
-            微信授权登录
-          </button>
+        isInWechat && !showAccountLogin ? <div>
+          {
+            isInMiniWechat ? (<button
+              aria-label="Sign in"
+              data-testid="login-button"
+              onClick={handleWechatMiniLogin}
+              className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
+            >
+              微信小程序授权登录
+            </button>) : (<button
+              aria-label="Sign in"
+              data-testid="login-button"
+              onClick={handleWechatAuthLogin}
+              className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
+            >
+              微信授权登录
+            </button>)
+          }
           <button
             aria-label="Sign in"
             data-testid="login-button"
@@ -50,7 +74,7 @@ function Login() {
           </button>
         </div> :
           <>
-            {(!isInMiniWechat || showAccountLogin) && startupConfig?.emailLoginEnabled && (
+            {(!isInWechat || showAccountLogin) && startupConfig?.emailLoginEnabled && (
               <LoginForm
                 onSubmit={login}
                 startupConfig={startupConfig}
@@ -64,7 +88,7 @@ function Login() {
       {startupConfig?.registrationEnabled && (
         <div className='flex justify-between items-center text-sm font-light text-gray-700 dark:text-white'>
           {
-            isInMiniWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
+            isInWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
           }
 
           {

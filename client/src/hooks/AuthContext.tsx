@@ -13,9 +13,10 @@ import { setTokenHeader, SystemRoles } from 'librechat-data-provider';
 import {
   useGetUserQuery,
   useLoginUserMutation,
+  useWxLoginUserMutation,
   useRefreshTokenMutation,
 } from 'librechat-data-provider/react-query';
-import type { TLoginResponse, TLoginUser } from 'librechat-data-provider';
+import type { TLoginResponse, TWxLoginUser, TLoginUser } from 'librechat-data-provider';
 import { TAuthConfig, TUserContext, TAuthContext, TResError } from '~/common';
 import { useLogoutUserMutation, useGetRole } from '~/data-provider';
 import useTimeout from './useTimeout';
@@ -100,6 +101,22 @@ const AuthContextProvider = ({
     });
   };
 
+  const wxLoginUser = useWxLoginUserMutation();
+  const wxLogin = (data: TWxLoginUser) => {
+    wxLoginUser.mutate(data, {
+      onSuccess: (data: TLoginResponse) => {
+        const { user, token } = data;
+        setError(undefined);
+        setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
+      },
+      onError: (error: TResError | unknown) => {
+        const resError = error as TResError;
+        doSetError(resError.message);
+        navigate('/login', { replace: true });
+      },
+    });
+  };
+
   const silentRefresh = useCallback(() => {
     if (authConfig?.test) {
       console.log('Test mode. Skipping silent refresh.');
@@ -131,15 +148,26 @@ const AuthContextProvider = ({
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const refresh_token = searchParams.get('refresh_token');
-    if (token && refresh_token) {
-      console.log('token', token);
-      console.log('refresh_token', refresh_token);
+    // 小程序登录逻辑
+    // const token = searchParams.get('token');
+    // const refresh_token = searchParams.get('refresh_token');
+    // if (token && refresh_token) {
+    //   console.log('token', token);
+    //   console.log('refresh_token', refresh_token);
 
-      window.localStorage.setItem('refresh_token', refresh_token);
-      setUserContext({ token, isAuthenticated: true, redirect: '/c/new' });
-    }
+    //   window.localStorage.setItem('refresh_token', refresh_token);
+    //   setUserContext({ token, isAuthenticated: true, redirect: '/c/new' });
+    // }
+
+    // 公众号登录
+    // const code = searchParams.get('code');
+    // if (code) {
+    //   console.log('拿到了微信回调的code', code);
+    //   // 用code调用后端，获取登录信息
+    //   wxLogin({
+    //     code,
+    //   });
+    // }
   }, [searchParams]);
 
   useEffect(() => {
@@ -153,7 +181,17 @@ const AuthContextProvider = ({
       doSetError(undefined);
     }
     if (!token || !isAuthenticated) {
-      silentRefresh();
+      const code = searchParams.get('code');
+      if (code) {
+        console.log('拿到了微信回调的code', code);
+        // 用code调用后端，获取登录信息
+        wxLogin({
+          code,
+        });
+      } else {
+        console.log('url没有code，走silentRefresh');
+        silentRefresh();
+      }
     }
   }, [
     token,

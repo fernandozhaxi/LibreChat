@@ -322,6 +322,26 @@ export const useLoginUserMutation = (): UseMutationResult<
   });
 };
 
+export const useWxLoginUserMutation = (): UseMutationResult<
+  t.TLoginResponse,
+  unknown,
+  t.TWxLoginUser,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  return useMutation((payload: t.TWxLoginUser) => dataService.wxlogin(payload), {
+    onMutate: () => {
+      queryClient.removeQueries();
+      localStorage.removeItem(LocalStorageKeys.LAST_CONVO_SETUP);
+      localStorage.removeItem(`${LocalStorageKeys.LAST_CONVO_SETUP}_0`);
+      localStorage.removeItem(`${LocalStorageKeys.LAST_CONVO_SETUP}_1`);
+      localStorage.removeItem(LocalStorageKeys.LAST_MODEL);
+      localStorage.removeItem(LocalStorageKeys.LAST_TOOLS);
+      localStorage.removeItem(LocalStorageKeys.FILES_TO_DELETE);
+    },
+  });
+};
+
 export const useRegisterUserMutation = (
   options?: m.RegistrationOptions,
 ): UseMutationResult<t.TError, unknown, t.TRegisterUser, unknown> => {

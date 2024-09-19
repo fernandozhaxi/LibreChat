@@ -276,6 +276,9 @@ export type TLoginUser = {
   email: string;
   password: string;
 };
+export type TWxLoginUser = {
+  code: string;
+};
 
 export type TLoginResponse = {
   token: string;

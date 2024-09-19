@@ -76,6 +76,8 @@ export const tokenizer = () => '/api/tokenizer';
 
 export const login = () => '/api/auth/login';
 
+export const wxlogin = () => '/api/auth/wxLogin';
+
 export const logout = () => '/api/auth/logout';
 
 export const register = () => '/api/auth/register';

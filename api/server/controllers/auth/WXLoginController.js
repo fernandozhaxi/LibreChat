@@ -3,18 +3,12 @@ const { logger } = require('~/config');
 const axios = require('axios');
 const User = require('~/models/User');
 const bcrypt = require('bcryptjs');
+const Balance = require('~/models/Balance');
 
-const wxLoginController = async (req, res) => {
+const wxminiLoginController = async (req, res) => {
   try {
-    // 调用微信的登录接口，获取openId
-    const appId = process.env.WXMINI_APPID;
-    const secret = process.env.WXMINI_SECRET;
+    const { WXMINI_APPID: appId, WXMINI_SECRET: secret } = process.env;
     const code = req.query.code;
-
-    console.log('appId', appId);
-    console.log('secret', secret);
-    console.log('code', code);
-
     const response = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`);
     const { openid, errmsg } = response.data;
     console.log('data', response.data);
@@ -23,7 +17,6 @@ const wxLoginController = async (req, res) => {
         wxOpenId: openid,
       }).lean();
       if (!user) {
-        console.log('openId对应的用户不存在，创建！');
         // 不存在该openId对应的用户，就建一个
         user = await User.create({
           wxOpenId: openid,
@@ -31,10 +24,20 @@ const wxLoginController = async (req, res) => {
           email: `${openid}@user.com`,
           password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
         });
+
+        // set a balance for the new user
+        await Balance.updateOne({
+          'user': user.id,
+        }, {
+          $set: {
+            tokenCredits: 10000,
+          },
+        }, { upsert: true });
+
       }
 
       const token = await setAuthTokens(user._id, res);
-      return res.status(200).send({ token });
+      return res.status(200).send({ token, user });
     } else {
       return res.status(500).json({ message: errmsg });
     }
@@ -44,6 +47,57 @@ const wxLoginController = async (req, res) => {
   }
 };
 
+const wxLoginController = async (req, res) => {
+  const { WX_APPID: appId, WX_SECRET: secret } = process.env;
+  const { code } = req.body;
+
+  try {
+    // 1. Get access token and openId from WeChat API
+    const getAccessUrl = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${secret}&code=${code}&grant_type=authorization_code`;
+    const response = await axios.get(getAccessUrl);
+    const { openid, access_token, errmsg } = response.data;
+
+    if (!openid) {
+      return res.status(500).json({ message: errmsg });
+    }
+
+    // 2. Check if user already exists in the database
+    let user = await User.findOne({ wxOpenId: openid }).lean();
+
+    if (!user) {
+      // 3. Create new user if it doesn't exist
+      const getUserInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}&lang=zh_CN`;
+      const userResponse = await axios.get(getUserInfoUrl);
+      const { nickname, headimgurl } = userResponse.data;
+
+      user = await User.create({
+        wxOpenId: openid,
+        username: nickname,
+        avatar: headimgurl,
+        email: `${openid}@user.com`,
+        password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
+      });
+
+      // set a balance for the new user
+      await Balance.updateOne({
+        'user': user.id,
+      }, {
+        $set: {
+          tokenCredits: 10000,
+        },
+      }, { upsert: true });
+    }
+
+    // 4. Set the authentication token and respond with user data
+    const token = await setAuthTokens(user._id, res);
+    return res.status(200).json({ token, user });
+
+  } catch (error) {
+    logger.error('[wxLoginController]', error);
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
+};
 module.exports = {
   wxLoginController,
+  wxminiLoginController,
 };
