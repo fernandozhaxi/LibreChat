@@ -17,24 +17,21 @@ function Login() {
   const [showAccountLogin, setShowAccountLogin] = useState(false);
   const isInWechat = isInWechatEnv();
   const isInMiniWechat = isInMiniWechatEnv();
-  console.log('isInWechat', isInWechat);
 
   const handleWechatMiniLogin = () => {
-    // uni.redirectTo({
-    //   url: '/pages/auth/index',
-    // });
-    handleWechatAuthLogin();
+    uni.redirectTo({
+      url: '/pages/auth/index',
+    });
   };
 
   const handleWechatAuthLogin = () => {
     const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
     const appid = 'appid=wx4cc329e7c19c2812';
-    const redirect = '&redirect_uri=https://1ce6374ed662.vicp.fun/';
+    const redirect = '&redirect_uri=https://www.cdyz.top';
     const type = '&response_type=code';
     const scope = '&scope=snsapi_userinfo';
-    const state = '&state=STATE';
+    const state = '&state=wechat';
     const queryUrl = url + appid + type + scope + state + redirect;
-    console.log(queryUrl);
     window.location.href = queryUrl + '#wechat_redirect';
   };
 
@@ -51,14 +48,14 @@ function Login() {
               onClick={handleWechatMiniLogin}
               className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
             >
-              微信小程序授权登录
+              微信小程序登录测试
             </button>) : (<button
               aria-label="Sign in"
               data-testid="login-button"
               onClick={handleWechatAuthLogin}
               className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
             >
-              微信授权登录
+              微信网页授权测试
             </button>)
           }
           <button

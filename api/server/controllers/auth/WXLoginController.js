@@ -9,38 +9,38 @@ const wxminiLoginController = async (req, res) => {
   try {
     const { WXMINI_APPID: appId, WXMINI_SECRET: secret } = process.env;
     const code = req.query.code;
+    // 1. Get openId from WeChat API
     const response = await axios.get(`https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`);
     const { openid, errmsg } = response.data;
-    console.log('data', response.data);
-    if (openid) {
-      let user = await User.findOne({
-        wxOpenId: openid,
-      }).lean();
-      if (!user) {
-        // 不存在该openId对应的用户，就建一个
-        user = await User.create({
-          wxOpenId: openid,
-          username: '微信用户',
-          email: `${openid}@user.com`,
-          password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
-        });
-
-        // set a balance for the new user
-        await Balance.updateOne({
-          'user': user.id,
-        }, {
-          $set: {
-            tokenCredits: 10000,
-          },
-        }, { upsert: true });
-
-      }
-
-      const token = await setAuthTokens(user._id, res);
-      return res.status(200).send({ token, user });
-    } else {
+    if (!openid) {
       return res.status(500).json({ message: errmsg });
     }
+    // 2. Check if user already exists in the database
+    let user = await User.findOne({
+      wxOpenId: openid,
+    }).lean();
+    if (!user) {
+      // 3. Create new user if it doesn't exist
+      user = await User.create({
+        wxOpenId: openid,
+        username: '微信用户',
+        email: `${openid}@user.com`,
+        password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
+      });
+
+      // set a balance for the new user
+      await Balance.updateOne({
+        'user': user.id,
+      }, {
+        $set: {
+          tokenCredits: 10000,
+        },
+      }, { upsert: true });
+    }
+
+    const token = await setAuthTokens(user._id, res);
+    return res.status(200).send({ token, user });
+
   } catch (err) {
     logger.error('[loginController]', err);
     return res.status(500).json({ message: 'Something went wrong' });
@@ -75,7 +75,7 @@ const wxLoginController = async (req, res) => {
         username: nickname,
         avatar: headimgurl,
         email: `${openid}@user.com`,
-        password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
+        password: bcrypt.hashSync(openid, bcrypt.genSaltSync(10)),
       });
 
       // set a balance for the new user

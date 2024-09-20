@@ -148,29 +148,6 @@ const AuthContextProvider = ({
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // 小程序登录逻辑
-    // const token = searchParams.get('token');
-    // const refresh_token = searchParams.get('refresh_token');
-    // if (token && refresh_token) {
-    //   console.log('token', token);
-    //   console.log('refresh_token', refresh_token);
-
-    //   window.localStorage.setItem('refresh_token', refresh_token);
-    //   setUserContext({ token, isAuthenticated: true, redirect: '/c/new' });
-    // }
-
-    // 公众号登录
-    // const code = searchParams.get('code');
-    // if (code) {
-    //   console.log('拿到了微信回调的code', code);
-    //   // 用code调用后端，获取登录信息
-    //   wxLogin({
-    //     code,
-    //   });
-    // }
-  }, [searchParams]);
-
-  useEffect(() => {
     if (userQuery.data) {
       setUser(userQuery.data);
     } else if (userQuery.isError) {
@@ -181,15 +158,23 @@ const AuthContextProvider = ({
       doSetError(undefined);
     }
     if (!token || !isAuthenticated) {
+      // 小程序登录逻辑
+      const state = searchParams.get('state');
+      const token = searchParams.get('token');
+      const refresh_token = searchParams.get('refresh_token');
       const code = searchParams.get('code');
-      if (code) {
-        console.log('拿到了微信回调的code', code);
-        // 用code调用后端，获取登录信息
-        wxLogin({
-          code,
-        });
+      const isFromWechat = state === 'wechat';
+      if (isFromWechat) {
+        if (token && refresh_token) {
+          window.localStorage.setItem('refresh_token', refresh_token);
+          setUserContext({ token, isAuthenticated: true, redirect: '/c/new' });
+        } else if (code) {
+          // If code exists in the url, is Wechat web
+          wxLogin({
+            code,
+          });
+        }
       } else {
-        console.log('url没有code，走silentRefresh');
         silentRefresh();
       }
     }
