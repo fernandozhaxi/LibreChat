@@ -4,6 +4,7 @@ const axios = require('axios');
 const User = require('~/models/User');
 const bcrypt = require('bcryptjs');
 const Balance = require('~/models/Balance');
+const crypto = require('crypto');
 
 const wxminiLoginController = async (req, res) => {
   try {
@@ -97,7 +98,28 @@ const wxLoginController = async (req, res) => {
     return res.status(500).json({ message: 'Something went wrong' });
   }
 };
+
+function getSignature(token, timestamp, nonce) {
+  const array = [token, timestamp, nonce];
+  array.sort();
+
+  const concatenatedString = array.join('');
+
+  const hash = crypto.createHash('sha1');
+  hash.update(concatenatedString);
+
+  return hash.digest('hex');
+}
+const wxCheckSignature = async (req, res) => {
+  const { signature, timestamp, nonce } = req.query;
+  let buildSign = getSignature('librechat', timestamp, nonce);
+  if (buildSign === signature) {
+    return res.status(200).json({ message: 'Something went wrong' });
+  }
+  return res.status(500).json({ message: 'Something went wrong' });
+};
 module.exports = {
   wxLoginController,
   wxminiLoginController,
+  wxCheckSignature,
 };

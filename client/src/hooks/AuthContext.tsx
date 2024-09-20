@@ -173,6 +173,8 @@ const AuthContextProvider = ({
           wxLogin({
             code,
           });
+        } else {
+          silentRefresh();
         }
       } else {
         silentRefresh();
