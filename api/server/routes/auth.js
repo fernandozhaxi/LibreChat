@@ -64,7 +64,7 @@ router.get('/wxminiLogin', loginLimiter, checkBan, wxminiLoginController);
 router.post('/wxLogin', loginLimiter, checkBan, wxLoginController);
 
 // Wechat login
-router.post('/wxCheckSignature', checkBan, wxCheckSignature);
+router.get('/wxCheckSignature', checkBan, wxCheckSignature);
 router.get('/getWXQrcode', checkBan, getWxQrCode);
 router.get('/wxLoginCheck', checkBan, wxCheckQrCode);
 
