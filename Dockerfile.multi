@@ -38,7 +38,7 @@ COPY api ./api
 COPY config ./config
 COPY --from=data-provider-build /app/packages/data-provider/dist ./packages/data-provider/dist
 COPY --from=client-build /app/client/dist ./client/dist
-COPY --from=client-build /app/vvX6jCZ4NP.txt ./client/dist/vvX6jCZ4NP.txt
+COPY vvX6jCZ4NP.txt ./client/dist/
 WORKDIR /app/api
 RUN npm prune --production
 EXPOSE 3080
