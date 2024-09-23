@@ -7,7 +7,13 @@ const {
 } = require('~/server/controllers/AuthController');
 const { loginController } = require('~/server/controllers/auth/LoginController');
 const { logoutController } = require('~/server/controllers/auth/LogoutController');
-const { wxLoginController, wxminiLoginController, wxCheckSignature } = require('~/server/controllers/auth/WXLoginController');
+const {
+  wxLoginController,
+  wxminiLoginController,
+  wxCheckSignature,
+  getWxQrCode,
+  wxCheckQrCode,
+} = require('~/server/controllers/auth/WXLoginController');
 const {
   checkBan,
   loginLimiter,
@@ -43,13 +49,7 @@ router.post(
   validateRegistration,
   registrationController,
 );
-router.post(
-  '/createUser',
-  requireJwtAuth,
-  checkBan,
-  checkAdmin,
-  registrationController,
-);
+router.post('/createUser', requireJwtAuth, checkBan, checkAdmin, registrationController);
 router.post(
   '/requestPasswordReset',
   resetPasswordLimiter,
@@ -63,6 +63,9 @@ router.get('/wxminiLogin', loginLimiter, checkBan, wxminiLoginController);
 
 router.post('/wxLogin', loginLimiter, checkBan, wxLoginController);
 
+// Wechat login
 router.post('/wxCheckSignature', checkBan, wxCheckSignature);
+router.get('/getWXQrcode', checkBan, getWxQrCode);
+router.get('/wxLoginCheck', checkBan, wxCheckQrCode);
 
 module.exports = router;
