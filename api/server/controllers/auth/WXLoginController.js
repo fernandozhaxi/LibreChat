@@ -5,64 +5,16 @@ const User = require('~/models/User');
 const bcrypt = require('bcryptjs');
 const Balance = require('~/models/Balance');
 const crypto = require('crypto');
+const WeixinApiUtil = require('~/server/utils/WeixinApiUtil');
 
-const wxminiLoginController = async (req, res) => {
-  try {
-    const { WXMINI_APPID: appId, WXMINI_SECRET: secret } = process.env;
-    const code = req.query.code;
-    // 1. Get openId from WeChat API
-    const response = await axios.get(
-      `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`,
-    );
-    const { openid, errmsg } = response.data;
-    if (!openid) {
-      return res.status(500).json({ message: errmsg });
-    }
-    // 2. Check if user already exists in the database
-    let user = await User.findOne({
-      wxOpenId: openid,
-    }).lean();
-    if (!user) {
-      // 3. Create new user if it doesn't exist
-      user = await User.create({
-        wxOpenId: openid,
-        username: '微信用户',
-        email: `${openid}@user.com`,
-        password: bcrypt.hashSync('123456789', bcrypt.genSaltSync(10)),
-      });
-
-      // set a balance for the new user
-      await Balance.updateOne(
-        {
-          user: user.id,
-        },
-        {
-          $set: {
-            tokenCredits: 10000,
-          },
-        },
-        { upsert: true },
-      );
-    }
-
-    const token = await setAuthTokens(user._id, res);
-    return res.status(200).send({ token, user });
-  } catch (err) {
-    logger.error('[loginController]', err);
-    return res.status(500).json({ message: 'Something went wrong' });
-  }
-};
+const { WX_APPID: appId, WX_SECRET: secret } = process.env;
+const weixinApiUtil = new WeixinApiUtil(appId, secret);
 
 const wxLoginController = async (req, res) => {
-  const { WX_APPID: appId, WX_SECRET: secret } = process.env;
   const { code } = req.body;
 
   try {
-    // 1. Get access token and openId from WeChat API
-    const getAccessUrl = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${appId}&secret=${secret}&code=${code}&grant_type=authorization_code`;
-    const response = await axios.get(getAccessUrl);
-    const { openid, access_token, errmsg } = response.data;
-
+    const { openid, access_token, errmsg } = await weixinApiUtil.getOauth2InfoByCode(code);
     if (!openid) {
       return res.status(500).json({ message: errmsg });
     }
@@ -72,9 +24,7 @@ const wxLoginController = async (req, res) => {
 
     if (!user) {
       // 3. Create new user if it doesn't exist
-      const getUserInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}&lang=zh_CN`;
-      const userResponse = await axios.get(getUserInfoUrl);
-      const { nickname, headimgurl } = userResponse.data;
+      const { nickname, headimgurl } = await weixinApiUtil.getWeixinUser(access_token, openid);
 
       user = await User.create({
         wxOpenId: openid,
@@ -107,50 +57,54 @@ const wxLoginController = async (req, res) => {
   }
 };
 
-// 接收微信服务端的调用
-const wxCheckSignature = async (req, res) => {
-  const { signature, timestamp, nonce, echostr } = req.query;
+const checkSignature = (req) => {
+  const { signature, timestamp, nonce } = req.query;
   const array = ['librechat', timestamp, nonce];
   array.sort();
   const concatenatedString = array.join('');
   const hash = crypto.createHash('sha1');
   hash.update(concatenatedString);
   const buildSign = hash.digest('hex');
-  if (buildSign == signature) {
+  return signature == buildSign;
+};
+
+// 用于配置服务器时做token验证
+const wxCheckSignature = async (req, res) => {
+  const { echostr } = req.query;
+  if (checkSignature(req)) {
     return res.status(200).send(echostr);
   }
   return res.status(500).send('Something went wrong');
 };
 
-const getWxAccessToken = async () => {
-  const { WX_APPID: appId, WX_SECRET: secret } = process.env;
-  // TODO 先从数据库中取，过期了就重新取，没过期就直接用
-  const getAccessUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${secret}`;
-  const response = await axios.get(getAccessUrl);
-  // const { expires_in } = response.data;
-  return response.data;
+// 扫码后接收微信事件以及后续处理
+const wxCheckSignatureCallback = async (req, res) => {
+  if (checkSignature(req)) {
+    // const { openid } = req.query;
+    console.log('query', req.query);
+    console.log('body', req.body);
+    const xmlData = `<xml>
+      <ToUserName><![CDATA[toUser]]></ToUserName>
+      <FromUserName><![CDATA[fromUser]]></FromUserName>
+      <CreateTime>12345678</CreateTime>
+      <MsgType><![CDATA[text]]></MsgType>
+      <Content><![CDATA[你好]]></Content>
+    </xml>`;
+
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(xmlData);
+    // 拿到openid就走系统登录流程
+    return res.status(200).send('登录成功！');
+  }
+  return res.status(500).send('Something went wrong');
 };
 
 // 获取微信登录二维码
 const getWxQrCode = async (req, res) => {
-  console.log('获取微信登录二维码');
   try {
-    // 1. Get wechat Access Token
-    const { access_token } = await getWxAccessToken();
-    if (access_token) {
-      // 2. Create temp qrcode
-      const wxQrUrl = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${access_token}`;
-      const data = { 'expire_seconds': 604800, 'action_name': 'QR_SCENE', 'action_info': { 'scene': { 'scene_id': 123 } } };
-      const response = await axios.post(wxQrUrl, data);
-      const { ticket } = response.data;
-      console.log(response.data);
-      res.status(200).json({
-        code: '',
-        url: `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${ticket}`,
-      });
-    } else {
-      res.status(500).send('Something went wrong');
-    }
+    const qrCode = await weixinApiUtil.getQrCode();
+    console.log(qrCode);
+    return res.status(200).json(qrCode);
   } catch (error) {
     res.status(500).send('Something went wrong');
   }
@@ -164,7 +118,7 @@ const wxCheckQrCode = async (req, res) => {
 module.exports = {
   wxLoginController,
   wxCheckSignature,
+  wxCheckSignatureCallback,
   getWxQrCode,
   wxCheckQrCode,
-  wxminiLoginController,
 };
