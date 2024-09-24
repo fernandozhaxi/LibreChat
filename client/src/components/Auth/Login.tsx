@@ -5,9 +5,16 @@ import { ErrorMessage } from '~/components/Auth/ErrorMessage';
 import { getLoginError } from '~/utils';
 import { useLocalize } from '~/hooks';
 import LoginForm from './LoginForm';
-import { isInWechatEnv, isInMiniWechatEnv } from '~/utils/wechat';
-import { Button } from '../ui';
+import { isInWechatEnv, isInPcDevice } from '~/utils/env';
+import { Dialog, DialogContent } from '~/components/ui';
 import { useState } from 'react';
+import { cn } from '~/utils/';
+
+import {
+  useWxQrMutation,
+} from 'librechat-data-provider/react-query';
+import type { TWxQrResponse } from 'librechat-data-provider';
+import { TResError } from '~/common';
 
 function Login() {
   const localize = useLocalize();
@@ -15,8 +22,11 @@ function Login() {
   const { startupConfig } = useOutletContext<TLoginLayoutContext>();
 
   const [showAccountLogin, setShowAccountLogin] = useState(false);
+  const [showPCWxLogin, setShowPCWxLogin] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrUrl, setQrUrl] = useState('');
   const isInWechat = isInWechatEnv();
-  const isInMiniWechat = isInMiniWechatEnv();
+  const isPc = isInPcDevice();
 
   // const handleWechatMiniLogin = () => {
   // uni.redirectTo({
@@ -33,6 +43,27 @@ function Login() {
     const state = '&state=wechat';
     const queryUrl = url + appid + type + scope + state + redirect;
     window.location.href = queryUrl + '#wechat_redirect';
+  };
+
+  const wxGetQr = useWxQrMutation();
+  const wxQr = () => {
+    wxGetQr.mutate({}, {
+      onSuccess: (data: TWxQrResponse) => {
+        const { code, url } = data;
+        console.log(code, url);
+        setQrUrl(url);
+        setQrLoading(false);
+      },
+      onError: (error: TResError | unknown) => {
+        const resError = error as TResError;
+      },
+    });
+  };
+
+  const handlePreWxScan = () => {
+    setQrLoading(true);
+    wxQr();
+    setShowPCWxLogin(true);
   };
 
   return (
@@ -72,22 +103,43 @@ function Login() {
           </button>
         </div> :
           <>
-            {(!isInWechat || showAccountLogin) && startupConfig?.emailLoginEnabled && (
-              <LoginForm
-                onSubmit={login}
-                startupConfig={startupConfig}
-                error={error}
-                setError={setError}
-              />
-            )}
+            {
+              isPc ? <div>
+                {startupConfig?.emailLoginEnabled && (
+                  <LoginForm
+                    onSubmit={login}
+                    startupConfig={startupConfig}
+                    error={error}
+                    setError={setError}
+                  />
+                )}
+
+              </div> : <div>
+                {startupConfig?.emailLoginEnabled && (
+                  <LoginForm
+                    onSubmit={login}
+                    startupConfig={startupConfig}
+                    error={error}
+                    setError={setError}
+                  />
+                )}
+              </div>
+            }
+
           </>
       }
 
       {startupConfig?.registrationEnabled && (
         <div className='flex justify-between items-center text-sm font-light text-gray-700 dark:text-white'>
-          {
-            isInWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
-          }
+          <div>
+            {
+              isInWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
+            }
+
+            {
+              isPc && <span aria-hidden="true" onClick={() => handlePreWxScan()}>微信扫码登录</span>
+            }
+          </div>
 
           {
             <p className="my-4 text-center text-sm font-light text-gray-700 dark:text-white">
@@ -100,7 +152,16 @@ function Login() {
           }
         </div>
       )}
-
+      {showPCWxLogin && <Dialog open={showPCWxLogin} onOpenChange={setShowPCWxLogin}>
+        <DialogContent
+          className={cn('w-2/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
+        >
+          <div className="overflow-x-auto p-0 sm:p-6 sm:pt-4 text-center">
+            <img style={{ height: '250px', width: '250px', 'margin': '0 auto' }} src={qrUrl} alt="" />
+            <div>请使用微信扫码</div>
+          </div>
+        </DialogContent>
+      </Dialog>}
     </>
   );
 }

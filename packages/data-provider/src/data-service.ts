@@ -151,6 +151,9 @@ export const login = (payload: t.TLoginUser) => {
 export const wxlogin = (payload: t.TWxLoginUser) => {
   return request.post(endpoints.wxlogin(), payload);
 };
+export const wxQrcode = () => {
+  return request.post(endpoints.wxQrcode());
+};
 
 export const logout = () => {
   return request.post(endpoints.logout());

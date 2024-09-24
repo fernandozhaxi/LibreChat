@@ -115,20 +115,42 @@ const wxCheckSignature = async (req, res) => {
   const concatenatedString = array.join('');
   const hash = crypto.createHash('sha1');
   hash.update(concatenatedString);
-  buildSign = hash.digest('hex')
+  const buildSign = hash.digest('hex');
   if (buildSign == signature) {
     return res.status(200).send(echostr);
   }
   return res.status(500).send('Something went wrong');
 };
 
+const getWxAccessToken = async () => {
+  const { WX_APPID: appId, WX_SECRET: secret } = process.env;
+  // TODO 先从数据库中取，过期了就重新取，没过期就直接用
+  const getAccessUrl = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${secret}`;
+  const response = await axios.get(getAccessUrl);
+  // const { expires_in } = response.data;
+  return response.data;
+};
+
 // 获取微信登录二维码
 const getWxQrCode = async (req, res) => {
-  const { WX_APPID: appId } = process.env;
+  console.log('获取微信登录二维码');
   try {
-    const redirect_uri = 'https://www.cdyz.top'
-    const wechatUrl = `https://open.weixin.qq.com/connect/qrconnect?appid=${appId}&redirect_uri=${encodeURIComponent(redirect_uri)}&response_type=code&scope=snsapi_login&state=STATE#wechat_redirect`;
-    res.json({ url: wechatUrl });
+    // 1. Get wechat Access Token
+    const { access_token } = await getWxAccessToken();
+    if (access_token) {
+      // 2. Create temp qrcode
+      const wxQrUrl = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${access_token}`;
+      const data = { 'expire_seconds': 604800, 'action_name': 'QR_SCENE', 'action_info': { 'scene': { 'scene_id': 123 } } };
+      const response = await axios.post(wxQrUrl, data);
+      const { ticket } = response.data;
+      console.log(response.data);
+      res.status(200).json({
+        code: '',
+        url: `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${ticket}`,
+      });
+    } else {
+      res.status(500).send('Something went wrong');
+    }
   } catch (error) {
     res.status(500).send('Something went wrong');
   }
@@ -136,7 +158,7 @@ const getWxQrCode = async (req, res) => {
 
 // 检查是否扫码成功
 const wxCheckQrCode = async (req, res) => {
-  const { WX_APPID: appId } = process.env;
+  // const { WX_APPID: appId } = process.env;
 };
 
 module.exports = {

@@ -34,16 +34,16 @@ export default defineConfig({
     fs: {
       cachedChecks: false,
     },
-    host: '192.168.8.24',
+    host: '192.168.8.48',
     port: 3090,
     strictPort: false,
     proxy: {
       '/api': {
-        target: 'http://192.168.8.24:3080',
+        target: 'http://192.168.8.48:3080',
         changeOrigin: true,
       },
       '/oauth': {
-        target: 'http://192.168.8.24:3080',
+        target: 'http://192.168.8.48:3080',
         changeOrigin: true,
       },
     },

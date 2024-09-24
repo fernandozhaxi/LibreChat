@@ -59,13 +59,11 @@ router.post(
 );
 router.post('/resetPassword', checkBan, validatePasswordReset, resetPasswordController);
 
-router.get('/wxminiLogin', loginLimiter, checkBan, wxminiLoginController);
-
-router.post('/wxLogin', loginLimiter, checkBan, wxLoginController);
-
 // Wechat login
+router.get('/wxminiLogin', loginLimiter, checkBan, wxminiLoginController);
+router.post('/wxLogin', loginLimiter, checkBan, wxLoginController);
 router.get('/wxCheckSignature', checkBan, wxCheckSignature);
-router.get('/getWXQrcode', checkBan, getWxQrCode);
+router.post('/wxQrcode', checkBan, getWxQrCode);
 router.get('/wxLoginCheck', checkBan, wxCheckQrCode);
 
 module.exports = router;

@@ -342,6 +342,15 @@ export const useWxLoginUserMutation = (): UseMutationResult<
   });
 };
 
+export const useWxQrMutation = (): UseMutationResult<
+  t.TWxQrResponse,
+  unknown,
+  unknown,
+  unknown
+> => {
+  return useMutation(() => dataService.wxQrcode());
+};
+
 export const useRegisterUserMutation = (
   options?: m.RegistrationOptions,
 ): UseMutationResult<t.TError, unknown, t.TRegisterUser, unknown> => {

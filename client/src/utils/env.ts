@@ -8,3 +8,8 @@ export const isInMiniWechatEnv  = () => {
   const ua = window.navigator.userAgent.toLowerCase();
   return /miniProgram/i.test(ua);
 };
+
+export const isInPcDevice  = () => {
+  const ua = window.navigator.userAgent;
+  return !(/Mobi|Android|iPhone/i.test(ua) && isInWechatEnv);
+};

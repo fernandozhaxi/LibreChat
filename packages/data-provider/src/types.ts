@@ -280,6 +280,11 @@ export type TWxLoginUser = {
   code: string;
 };
 
+export type TWxQrResponse = {
+  code?: string;
+  url: string;
+};
+
 export type TLoginResponse = {
   token: string;
   user: TUser;
