@@ -109,7 +109,7 @@ const wxLoginController = async (req, res) => {
 
 // 接收微信服务端的调用
 const wxCheckSignature = async (req, res) => {
-  const { signature, timestamp, nonce } = req.query;
+  const { signature, timestamp, nonce, echostr } = req.query;
 
   const array = ['librechat', timestamp, nonce];
   array.sort();
@@ -119,9 +119,27 @@ const wxCheckSignature = async (req, res) => {
   buildSign = hash.digest('hex')
 
   if (buildSign === signature) {
-    return res.status(200).json({ message: 'Something went wrong' });
+    return res.status(200).json(echostr);
   }
-  return res.status(500).json({ message: 'Something went wrong' });
+  return res.status(500).json(false);
+};
+
+const wxCheckSignature = async (req, res) => {
+  const { signature, timestamp, nonce, echostr } = req.query;
+
+  const array = ['librechat', timestamp, nonce];
+  array.sort();
+  const concatenatedString = array.join('');
+  const hash = crypto.createHash('sha1');
+  hash.update(concatenatedString);
+  buildSign = hash.digest('hex')
+
+  logger.log('[wxCheckSignature]', buildSign);
+
+  if (buildSign === signature) {
+    return res.status(200).json(echostr);
+  }
+  return res.status(500).json(false);
 };
 
 // 获取微信登录二维码
