@@ -108,23 +108,18 @@ const wxLoginController = async (req, res) => {
 };
 
 // 接收微信服务端的调用
-
 const wxCheckSignature = async (req, res) => {
   const { signature, timestamp, nonce, echostr } = req.query;
-
   const array = ['librechat', timestamp, nonce];
   array.sort();
   const concatenatedString = array.join('');
   const hash = crypto.createHash('sha1');
   hash.update(concatenatedString);
   buildSign = hash.digest('hex')
-
-  logger.log('[wxCheckSignature]', buildSign, signature);
-
-  if (buildSign === signature) {
-    return res.status(200).json(echostr);
+  if (buildSign == signature) {
+    return res.status(200).send(echostr);
   }
-  return res.status(500).json(false);
+  return res.status(500).send('Something went wrong');
 };
 
 // 获取微信登录二维码
@@ -146,8 +141,8 @@ const wxCheckQrCode = async (req, res) => {
 
 module.exports = {
   wxLoginController,
-  wxminiLoginController,
   wxCheckSignature,
   getWxQrCode,
   wxCheckQrCode,
+  wxminiLoginController,
 };
