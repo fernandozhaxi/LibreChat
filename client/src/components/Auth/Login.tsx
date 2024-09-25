@@ -23,7 +23,6 @@ function Login() {
   const [showPCWxLogin, setShowPCWxLogin] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
   const [qrUrl, setQrUrl] = useState('');
-  const [ticket, setTicket] = useState('');
   const isInWechat = isInWechatEnv();
   const isPc = isInPcDevice();
 
@@ -46,8 +45,16 @@ function Login() {
         onSuccess: (data: TWxQrResponse) => {
           const { code, url } = data;
           setQrUrl(url);
-          setTicket(code);
           setQrLoading(false);
+
+          const loginCheckInterval = setInterval(async () => {
+            const token = await scanQrLogin({
+              code: code,
+            });
+            if (token) {
+              clearInterval(loginCheckInterval);
+            }
+          }, 3000);
         },
         onError: (error: TResError | unknown) => {
           const resError = error as TResError;
@@ -60,15 +67,6 @@ function Login() {
     setQrLoading(true);
     wxQr();
     setShowPCWxLogin(true);
-
-    const loginCheckInterval = setInterval(async () => {
-      const token = await scanQrLogin({
-        code: ticket,
-      });
-      if (token) {
-        clearInterval(loginCheckInterval);
-      }
-    }, 3000);
   };
 
   return (
