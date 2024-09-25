@@ -132,11 +132,15 @@ const AuthContextProvider = ({
       wxQrLogin.mutate(data, {
         onSuccess: (data: TLoginResponse) => {
           const { user, token } = data;
-          resolve(token);
-          setTimeout(() => {
-            setError(undefined);
-            setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
-          }, 1000);
+          if (token && user) {
+            resolve(token);
+            setTimeout(() => {
+              setError(undefined);
+              setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
+            }, 500);
+          } else {
+            resolve('');
+          }
         },
         onError: (error: TResError | unknown) => {
           resolve('');
