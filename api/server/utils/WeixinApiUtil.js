@@ -31,6 +31,12 @@ class WeixinApiUtil {
     }
   }
 
+  /**
+   * 获取微信用户信息
+   * @param {} access_token
+   * @param {*} openid
+   * @returns
+   */
   async getWeixinUser(access_token, openid) {
     const token = access_token || this.ACCESS_TOKEN;
     const url = `https://api.weixin.qq.com/sns/userinfo?access_token=${token}&openid=${openid}&lang=zh_CN`;
@@ -46,6 +52,7 @@ class WeixinApiUtil {
       throw error;
     }
   }
+
   async getAccessToken() {
     if (this.ACCESS_TOKEN && moment().isBefore(this.ACCESS_TOKEN_EXPIRE_TIME)) {
       return this.ACCESS_TOKEN;
@@ -61,38 +68,43 @@ class WeixinApiUtil {
       this.ACCESS_TOKEN_EXPIRE_TIME = moment().add(data.expires_in - 10, 'seconds'); // 预留10秒过期
       return this.ACCESS_TOKEN;
     } catch (error) {
-      throw new Error(`HTTP error! `);
+      throw new Error('HTTP error! ');
     }
   }
 
+  /**
+   * 获取微信登录二维码
+   * @return
+   */
   async getQrCode() {
     try {
       const accessToken = await this.getAccessToken();
-      console.log('accessToken', accessToken);
-      const url = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${accessToken}`;
+      if (accessToken) {
+        const url = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${accessToken}`;
 
-      const jsonBody = {
-        expire_seconds: this.QR_CODE_TICKET_TIMEOUT,
-        action_name: 'QR_STR_SCENE',
-        action_info: {
-          scene: {
-            scene_str: uuidv4(), // 随机场景字符串
+        const jsonBody = {
+          expire_seconds: this.QR_CODE_TICKET_TIMEOUT,
+          action_name: 'QR_STR_SCENE',
+          action_info: {
+            scene: {
+              scene_str: uuidv4(),
+            },
           },
-        },
-      };
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(jsonBody),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        };
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(jsonBody),
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const weixinQrCode = {
+          code: data.ticket,
+          url: `${this.QR_CODE_URL_PREFIX}${encodeURIComponent(data.ticket)}`,
+        };
+        return weixinQrCode;
       }
-      const data = await response.json();
-      const weixinQrCode = {
-        code: data.ticket,
-        url: `${this.QR_CODE_URL_PREFIX}${encodeURIComponent(data.ticket)}`, // 生成二维码 URL
-      };
-      return weixinQrCode;
     } catch (error) {
       console.error('Fetch error:', error);
     }

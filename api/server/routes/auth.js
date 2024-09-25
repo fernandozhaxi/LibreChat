@@ -8,12 +8,16 @@ const {
 const { loginController } = require('~/server/controllers/auth/LoginController');
 const { logoutController } = require('~/server/controllers/auth/LogoutController');
 const {
-  wxLoginController,
-  wxCheckSignature,
-  wxCheckSignatureCallback,
+  wxOAuthLoginController,
   getWxQrCode,
   wxCheckQrCode,
-} = require('~/server/controllers/auth/WXLoginController');
+} = require('~/server/controllers/auth/WeixinUserController');
+
+const {
+  weixinCheckGet,
+  weixinCheckPost,
+} = require('~/server/controllers/auth/WeixinServerController');
+
 const {
   checkBan,
   loginLimiter,
@@ -60,9 +64,9 @@ router.post(
 router.post('/resetPassword', checkBan, validatePasswordReset, resetPasswordController);
 
 // Wechat login
-router.post('/wxLogin', loginLimiter, checkBan, wxLoginController);
-router.get('/wxCheckSignature', checkBan, wxCheckSignature);
-router.post('/wxCheckSignature', checkBan, wxCheckSignatureCallback);
+router.post('/wxLogin', loginLimiter, checkBan, wxOAuthLoginController);
+router.get('/wxCheck', checkBan, weixinCheckGet);
+router.post('/wxCheck', checkBan, weixinCheckPost);
 router.post('/wxQrcode', checkBan, getWxQrCode);
 router.get('/wxLoginCheck', checkBan, wxCheckQrCode);
 
