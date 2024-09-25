@@ -10,9 +10,7 @@ import { Dialog, DialogContent } from '~/components/ui';
 import { useState } from 'react';
 import { cn } from '~/utils/';
 
-import {
-  useWxQrMutation,
-} from 'librechat-data-provider/react-query';
+import { useWxQrMutation } from 'librechat-data-provider/react-query';
 import type { TWxQrResponse } from 'librechat-data-provider';
 import { TResError } from '~/common';
 
@@ -37,7 +35,7 @@ function Login() {
   const handleWechatAuthLogin = () => {
     const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
     const appid = 'appid=wx4cc329e7c19c2812';
-    const redirect = `&redirect_uri=${encodeURIComponent('https://www.cdyz.top')}`;
+    const redirect = `&redirect_uri=${encodeURIComponent(window.location.origin)}`;
     const type = '&response_type=code';
     const scope = '&scope=snsapi_userinfo';
     const state = '&state=wechat';
@@ -47,17 +45,20 @@ function Login() {
 
   const wxGetQr = useWxQrMutation();
   const wxQr = () => {
-    wxGetQr.mutate({}, {
-      onSuccess: (data: TWxQrResponse) => {
-        const { code, url } = data;
-        console.log(code, url);
-        setQrUrl(url);
-        setQrLoading(false);
+    wxGetQr.mutate(
+      {},
+      {
+        onSuccess: (data: TWxQrResponse) => {
+          const { code, url } = data;
+          console.log(code, url);
+          setQrUrl(url);
+          setQrLoading(false);
+        },
+        onError: (error: TResError | unknown) => {
+          const resError = error as TResError;
+        },
       },
-      onError: (error: TResError | unknown) => {
-        const resError = error as TResError;
-      },
-    });
+    );
   };
 
   const handlePreWxScan = () => {
@@ -70,8 +71,8 @@ function Login() {
     <>
       {error && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
 
-      {
-        isInWechat && !showAccountLogin ? <div>
+      {isInWechat && !showAccountLogin ? (
+        <div>
           {
             // isInMiniWechat ? (<button
             //   aria-label="Sign in"
@@ -81,14 +82,14 @@ function Login() {
             // >
             //   微信小程序登录测试
             // </button>) :
-            (<button
+            <button
               aria-label="Sign in"
               data-testid="login-button"
               onClick={handleWechatAuthLogin}
               className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
             >
               微信授权登录
-            </button>)
+            </button>
           }
           <button
             aria-label="Sign in"
@@ -97,48 +98,53 @@ function Login() {
             onClick={() => {
               setShowAccountLogin(true);
             }}
-            className="w-full mt-5 transform rounded-md bg-gray-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-gray-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
+            className="focus:bg-gray-550 mt-5 w-full transform rounded-md bg-gray-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
           >
             账号密码登录
           </button>
-        </div> :
-          <>
-            {
-              isPc ? <div>
-                {startupConfig?.emailLoginEnabled && (
-                  <LoginForm
-                    onSubmit={login}
-                    startupConfig={startupConfig}
-                    error={error}
-                    setError={setError}
-                  />
-                )}
-
-              </div> : <div>
-                {startupConfig?.emailLoginEnabled && (
-                  <LoginForm
-                    onSubmit={login}
-                    startupConfig={startupConfig}
-                    error={error}
-                    setError={setError}
-                  />
-                )}
-              </div>
-            }
-
-          </>
-      }
+        </div>
+      ) : (
+        <>
+          {isPc ? (
+            <div>
+              {startupConfig?.emailLoginEnabled && (
+                <LoginForm
+                  onSubmit={login}
+                  startupConfig={startupConfig}
+                  error={error}
+                  setError={setError}
+                />
+              )}
+            </div>
+          ) : (
+            <div>
+              {startupConfig?.emailLoginEnabled && (
+                <LoginForm
+                  onSubmit={login}
+                  startupConfig={startupConfig}
+                  error={error}
+                  setError={setError}
+                />
+              )}
+            </div>
+          )}
+        </>
+      )}
 
       {startupConfig?.registrationEnabled && (
-        <div className='flex justify-between items-center text-sm font-light text-gray-700 dark:text-white'>
+        <div className="flex items-center justify-between text-sm font-light text-gray-700 dark:text-white">
           <div>
-            {
-              isInWechat && showAccountLogin && <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>微信登录</span>
-            }
+            {isInWechat && showAccountLogin && (
+              <span aria-hidden="true" onClick={() => setShowAccountLogin(false)}>
+                微信登录
+              </span>
+            )}
 
-            {
-              isPc && <span aria-hidden="true" onClick={() => handlePreWxScan()}>微信扫码登录</span>
-            }
+            {isPc && (
+              <span aria-hidden="true" onClick={() => handlePreWxScan()}>
+                微信扫码登录
+              </span>
+            )}
           </div>
 
           {
@@ -152,16 +158,22 @@ function Login() {
           }
         </div>
       )}
-      {showPCWxLogin && <Dialog open={showPCWxLogin} onOpenChange={setShowPCWxLogin}>
-        <DialogContent
-          className={cn('w-2/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
-        >
-          <div className="overflow-x-auto p-0 sm:p-6 sm:pt-4 text-center">
-            <img style={{ height: '250px', width: '250px', 'margin': '0 auto' }} src={qrUrl} alt="" />
-            <div>请使用微信扫码</div>
-          </div>
-        </DialogContent>
-      </Dialog>}
+      {showPCWxLogin && (
+        <Dialog open={showPCWxLogin} onOpenChange={setShowPCWxLogin}>
+          <DialogContent
+            className={cn('w-2/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
+          >
+            <div className="overflow-x-auto p-0 text-center sm:p-6 sm:pt-4">
+              <img
+                style={{ height: '250px', width: '250px', margin: '0 auto' }}
+                src={qrUrl}
+                alt=""
+              />
+              <div>请使用微信扫码</div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
