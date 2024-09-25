@@ -1,4 +1,3 @@
-
 const crypto = require('crypto');
 const User = require('~/models/User');
 const bcrypt = require('bcryptjs');
@@ -6,6 +5,7 @@ const Balance = require('~/models/Balance');
 const WeixinMsgUtil = require('~/server/utils/WeixinMsgUtil');
 const WeixinApiUtil = require('~/server/utils/WeixinApiUtil');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
+
 /**
  * @param {string} signature
  * @param {string} timestamp
@@ -29,22 +29,25 @@ const handleWeixinMsg = async (req) => {
   const { openid } = req.query;
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
-    console.log('扫码登录');
     return handleScanLogin(receiveMessage);
   }
   // 关注公众号
   if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
-    console.log('关注公众号');
     let user = await User.findOne({ wxOpenId: openid }).lean();
     if (!user) {
       const { nickname, headimgurl } = await WeixinApiUtil.getWeixinUser(null, openid);
-      user = await createWeixinUser(openid, nickname, headimgurl);
+      await createWeixinUser(openid, nickname, headimgurl);
     }
-    return receiveMessage.getReplyTextMsg('欢迎关注');
+    return receiveMessage.getReplyTextMsg('欢迎关注!');
   }
   return receiveMessage.getReplyTextMsg('收到（自动回复）');
 };
 
+/**
+ *
+ * @param {ReceiveMessage} receiveMessage
+ * @returns template msg
+ */
 const handleScanLogin = (receiveMessage) => {
   const ticket = WeixinMsgUtil.getQrCodeTicket(receiveMessage);
   if (WeixinQrCodeCacheUtil.get(ticket) === null) {
@@ -55,7 +58,9 @@ const handleScanLogin = (receiveMessage) => {
 };
 
 /**
- * @param {string} signature
+ * @param {string} openid
+ * @param {string} nickname
+ * @param {string} avatar
  */
 const createWeixinUser = async (openid, nickname, avatar) => {
   const user = await User.create({
