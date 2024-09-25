@@ -155,6 +155,10 @@ export const wxQrcode = () => {
   return request.post(endpoints.wxQrcode());
 };
 
+export const wxQrLogin = (payload: t.TWxLoginUser) => {
+  return request.post(endpoints.wxQrLogin(), payload);
+};
+
 export const logout = () => {
   return request.post(endpoints.logout());
 };

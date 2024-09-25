@@ -16,21 +16,16 @@ import { TResError } from '~/common';
 
 function Login() {
   const localize = useLocalize();
-  const { error, setError, login } = useAuthContext();
+  const { error, setError, login, scanQrLogin } = useAuthContext();
   const { startupConfig } = useOutletContext<TLoginLayoutContext>();
 
   const [showAccountLogin, setShowAccountLogin] = useState(false);
   const [showPCWxLogin, setShowPCWxLogin] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
   const [qrUrl, setQrUrl] = useState('');
+  const [ticket, setTicket] = useState('');
   const isInWechat = isInWechatEnv();
   const isPc = isInPcDevice();
-
-  // const handleWechatMiniLogin = () => {
-  // uni.redirectTo({
-  //   url: '/pages/auth/index',
-  // });
-  // };
 
   const handleWechatAuthLogin = () => {
     const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
@@ -52,6 +47,7 @@ function Login() {
           const { code, url } = data;
           console.log(code, url);
           setQrUrl(url);
+          setTicket(code);
           setQrLoading(false);
         },
         onError: (error: TResError | unknown) => {
@@ -65,6 +61,15 @@ function Login() {
     setQrLoading(true);
     wxQr();
     setShowPCWxLogin(true);
+
+    const loginCheckInterval = setInterval(async () => {
+      const token = await scanQrLogin({
+        code: ticket,
+      });
+      if (token) {
+        clearInterval(loginCheckInterval);
+      }
+    }, 3000);
   };
 
   return (

@@ -3,8 +3,9 @@ const { logger } = require('~/config');
 const User = require('~/models/User');
 const WeixinApiUtil = require('~/server/utils/WeixinApiUtil');
 const { createWeixinUser } = require('~/server/services/WeixinUserService');
-const weixinApiUtil = new WeixinApiUtil();
+const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 
+const weixinApiUtil = new WeixinApiUtil();
 const wxOAuthLoginController = async (req, res) => {
   const { code } = req.body;
 
@@ -45,10 +46,18 @@ const getWxQrCode = async (req, res) => {
 // 检查是否扫码成功
 const wxCheckQrCode = async (req, res) => {
   console.log(req, res);
-  // 根据用户传过来的code，检查数据库中的状态
-  // 关联ticket和openId到数据库，客户端轮询的时候，自动登录。
-  // const token = await setAuthTokens(user._id, res);
-  // const { WX_APPID: appId } = process.env;
+  const { ticket } = req.query;
+  const openId = WeixinQrCodeCacheUtil.get(ticket);
+  if (openId) {
+    let user = await User.findOne({ wxOpenId: openId }).lean();
+    const token = await setAuthTokens(user._id, res);
+    res.status(200).send({ token, user });
+  } else {
+    // 没有登录成功
+    res.status(200).json({
+      login: 0,
+    });
+  }
 };
 
 module.exports = {

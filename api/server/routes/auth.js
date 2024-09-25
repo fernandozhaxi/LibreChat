@@ -68,6 +68,6 @@ router.post('/wxLogin', loginLimiter, checkBan, wxOAuthLoginController);
 router.get('/wxCheck', checkBan, weixinCheckGet);
 router.post('/wxCheck', checkBan, weixinCheckPost);
 router.post('/wxQrcode', checkBan, getWxQrCode);
-router.get('/wxLoginCheck', checkBan, wxCheckQrCode);
+router.get('/wxQrLogin', checkBan, wxCheckQrCode);
 
 module.exports = router;

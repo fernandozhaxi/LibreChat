@@ -14,6 +14,7 @@ import type {
   Assistant,
   TResPlugin,
   TLoginUser,
+  TWxLoginUser,
   AuthTypeEnum,
   TModelsConfig,
   TConversation,
@@ -393,6 +394,7 @@ export type TAuthContext = {
   isAuthenticated: boolean;
   error: string | undefined;
   login: (data: TLoginUser) => void;
+  scanQrLogin: (data: TWxLoginUser) => Promise<string>;
   logout: () => void;
   setError: React.Dispatch<React.SetStateAction<string | undefined>>;
   roles?: Record<string, TRole | null | undefined>;

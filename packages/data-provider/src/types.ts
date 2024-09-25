@@ -281,7 +281,7 @@ export type TWxLoginUser = {
 };
 
 export type TWxQrResponse = {
-  code?: string;
+  code: string;
   url: string;
 };
 

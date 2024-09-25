@@ -80,6 +80,8 @@ export const wxlogin = () => '/api/auth/wxLogin';
 
 export const wxQrcode = () => '/api/auth/wxQrcode';
 
+export const wxQrLogin = () => '/api/auth/wxQrLogin';
+
 export const logout = () => '/api/auth/logout';
 
 export const register = () => '/api/auth/register';

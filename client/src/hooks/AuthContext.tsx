@@ -15,6 +15,7 @@ import {
   useLoginUserMutation,
   useWxLoginUserMutation,
   useRefreshTokenMutation,
+  useWxQrLoginMutation,
 } from 'librechat-data-provider/react-query';
 import type { TLoginResponse, TWxLoginUser, TLoginUser } from 'librechat-data-provider';
 import { TAuthConfig, TUserContext, TAuthContext, TResError } from '~/common';
@@ -103,17 +104,49 @@ const AuthContextProvider = ({
 
   const wxLoginUser = useWxLoginUserMutation();
   const wxLogin = (data: TWxLoginUser) => {
-    wxLoginUser.mutate(data, {
-      onSuccess: (data: TLoginResponse) => {
-        const { user, token } = data;
-        setError(undefined);
-        setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
-      },
-      onError: (error: TResError | unknown) => {
-        const resError = error as TResError;
-        doSetError(resError.message);
-        navigate('/login', { replace: true });
-      },
+    return new Promise((resolve, reject) => {
+      wxLoginUser.mutate(data, {
+        onSuccess: (data: TLoginResponse) => {
+          const { user, token } = data;
+          setTimeout(() => {
+            resolve(true);
+            setError(undefined);
+            setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
+          }, 1000);
+        },
+        onError: (error: TResError | unknown) => {
+          reject(false);
+          setTimeout(() => {
+            const resError = error as TResError;
+            doSetError(resError.message);
+            navigate('/login', { replace: true });
+          }, 1000);
+        },
+      });
+    });
+  };
+
+  const wxQrLogin = useWxQrLoginMutation();
+  const scanQrLogin = (data: TWxLoginUser): Promise<string> => {
+    return new Promise((resolve) => {
+      wxQrLogin.mutate(data, {
+        onSuccess: (data: TLoginResponse) => {
+          const { user, token } = data;
+          resolve(token);
+          setTimeout(() => {
+            setError(undefined);
+            setUserContext({ token, isAuthenticated: true, user, redirect: '/c/new' });
+          }, 1000);
+        },
+        onError: (error: TResError | unknown) => {
+          resolve('');
+          setTimeout(() => {
+            const resError = error as TResError;
+            doSetError(resError.message);
+            navigate('/login', { replace: true });
+          }, 1000);
+        },
+      });
     });
   };
 
@@ -217,6 +250,7 @@ const AuthContextProvider = ({
       error,
       login,
       logout,
+      scanQrLogin,
       setError,
       roles: {
         [SystemRoles.USER]: userRole,
