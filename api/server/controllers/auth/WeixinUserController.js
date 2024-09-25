@@ -45,8 +45,8 @@ const getWxQrCode = async (req, res) => {
 
 // 检查是否扫码成功
 const wxCheckQrCode = async (req, res) => {
-  const { code: ticket } = req.query;
-  const openId = WeixinQrCodeCacheUtil.get(ticket);
+  const { code } = req.body;
+  const openId = WeixinQrCodeCacheUtil.get(code);
   if (openId) {
     let user = await User.findOne({ wxOpenId: openId }).lean();
     const token = await setAuthTokens(user._id, res);

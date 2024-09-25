@@ -1,4 +1,3 @@
-
 const { checkSignature, handleWeixinMsg } = require('~/server/services/WeixinUserService');
 
 // 用于配置服务器时做token验证
@@ -14,8 +13,10 @@ const weixinCheckGet = async (req, res) => {
 const weixinCheckPost = async (req, res) => {
   const { signature, timestamp, nonce } = req.query;
   if (checkSignature(signature, timestamp, nonce)) {
-    return res.status(500).send(handleWeixinMsg(req));
+    const text = await handleWeixinMsg(req);
+    return res.status(200).send(text);
   }
+  return res.status(500).send('Wechat verify failed!');
 };
 
 module.exports = {

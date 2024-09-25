@@ -30,7 +30,7 @@ function Login() {
   const handleWechatAuthLogin = () => {
     const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
     const appid = 'appid=wx4cc329e7c19c2812';
-    const redirect = `&redirect_uri=${encodeURIComponent(window.location.origin)}`;
+    const redirect = `&redirect_uri=${encodeURIComponent('https://www.cdyz.top')}`;
     const type = '&response_type=code';
     const scope = '&scope=snsapi_userinfo';
     const state = '&state=wechat';
@@ -59,6 +59,7 @@ function Login() {
   const startTimer = (code: string) => {
     if (loginCheckInterval) {
       clearInterval(loginCheckInterval);
+      setLoginCheckInterval(null);
     }
 
     const intervalId = setInterval(async () => {
@@ -88,7 +89,6 @@ function Login() {
     setQrLoading(true);
     wxQr();
   }
-
 
   return (
     <>

@@ -1,5 +1,3 @@
-// const parseString = require('xml2js').parseString;
-
 class WeixinMsgUtil {
   // 事件-关注
   static EVENT_SUBSCRIBE = 'subscribe';
@@ -10,20 +8,17 @@ class WeixinMsgUtil {
    * @param {string} xml
    * @return {ReceiveMessage}
    */
-  static async msgToReceiveMessage(req) {
-    const str = req.body.toString('utf8');
-    const jsonObject = JSON.parse(str);
-    // const jsonObject = await parseString(xml);
-    console.log(jsonObject);
+  static msgToReceiveMessage(req) {
+    const jsonObject = req.body.xml;
     const receiveMessage = new ReceiveMessage();
-    receiveMessage.toUserName = jsonObject.ToUserName;
-    receiveMessage.fromUserName = jsonObject.FromUserName;
-    receiveMessage.createTime = jsonObject.CreateTime;
-    receiveMessage.msgType = jsonObject.MsgType;
-    receiveMessage.content = jsonObject.Content;
-    receiveMessage.msgId = jsonObject.MsgId;
-    receiveMessage.event = jsonObject.Event;
-    receiveMessage.ticket = jsonObject.Ticket;
+    receiveMessage.toUserName = jsonObject.tousername?.[0] || '';
+    receiveMessage.fromUserName = jsonObject.fromusername?.[0] || '';
+    receiveMessage.createTime = jsonObject.createtime?.[0] || '';
+    receiveMessage.msgType = jsonObject.msgtype?.[0] || '';
+    receiveMessage.content = jsonObject.content?.[0] || '';
+    receiveMessage.msgId = jsonObject.msgid?.[0] || '';
+    receiveMessage.event = jsonObject.event?.[0] || '';
+    receiveMessage.ticket = jsonObject.ticket?.[0] || '';
     return receiveMessage;
   }
 
@@ -56,7 +51,6 @@ class WeixinMsgUtil {
   static getQrCodeTicket(receiveMessage) {
     return receiveMessage.ticket;
   }
-
 }
 
 class ReceiveMessage {
@@ -71,13 +65,22 @@ class ReceiveMessage {
     this.ticket = '';
   }
   getReplyTextMsg(msg) {
-    const xml = '<xml>\n'
-      + '       <ToUserName><![CDATA[' + this.fromUserName + ']]></ToUserName>\n'
-      + '       <FromUserName><![CDATA[' + this.toUserName + ']]></FromUserName>\n'
-      + '       <CreateTime>' + new Date().getTime() + '</CreateTime>\n'
-      + '       <MsgType><![CDATA[text]]></MsgType>\n'
-      + '       <Content><![CDATA[' + msg + ']]></Content>\n'
-      + '     </xml>';
+    const xml =
+      '<xml>\n' +
+      '       <ToUserName><![CDATA[' +
+      this.fromUserName +
+      ']]></ToUserName>\n' +
+      '       <FromUserName><![CDATA[' +
+      this.toUserName +
+      ']]></FromUserName>\n' +
+      '       <CreateTime>' +
+      new Date().getTime() +
+      '</CreateTime>\n' +
+      '       <MsgType><![CDATA[text]]></MsgType>\n' +
+      '       <Content><![CDATA[' +
+      msg +
+      ']]></Content>\n' +
+      '     </xml>';
     return xml;
   }
 }

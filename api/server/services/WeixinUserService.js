@@ -5,7 +5,6 @@ const Balance = require('~/models/Balance');
 const WeixinMsgUtil = require('~/server/utils/WeixinMsgUtil');
 const WeixinApiUtil = require('~/server/utils/WeixinApiUtil');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
-
 /**
  * @param {string} signature
  * @param {string} timestamp
@@ -25,8 +24,8 @@ const checkSignature = (signature, timestamp, nonce) => {
  * 处理微信对我们服务器的回调
  */
 const handleWeixinMsg = async (req) => {
-  const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   const { openid } = req.query;
+  const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
     return handleScanLogin(receiveMessage);
@@ -50,7 +49,7 @@ const handleWeixinMsg = async (req) => {
  */
 const handleScanLogin = (receiveMessage) => {
   const ticket = WeixinMsgUtil.getQrCodeTicket(receiveMessage);
-  if (WeixinQrCodeCacheUtil.get(ticket) === null) {
+  if (!WeixinQrCodeCacheUtil.get(ticket)) {
     const openId = receiveMessage.fromUserName;
     WeixinQrCodeCacheUtil.put(ticket, openId);
   }

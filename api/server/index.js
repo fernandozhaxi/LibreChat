@@ -21,6 +21,7 @@ const AppService = require('./services/AppService');
 const staticCache = require('./utils/staticCache');
 const noIndex = require('./middleware/noIndex');
 const routes = require('./routes');
+const xmlparser = require('express-xml-bodyparser');
 
 const { PORT, HOST, ALLOW_SOCIAL_LOGIN, DISABLE_COMPRESSION } = process.env ?? {};
 
@@ -56,6 +57,7 @@ const startServer = async () => {
   app.set('trust proxy', 1); /* trust first proxy */
   app.use(cors());
   app.use(cookieParser());
+  app.use(xmlparser());
 
   if (!isEnabled(DISABLE_COMPRESSION)) {
     app.use(compression());
