@@ -23,6 +23,7 @@ function Login() {
   const [showPCWxLogin, setShowPCWxLogin] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
   const [qrUrl, setQrUrl] = useState('');
+  const [loginCheckInterval, setLoginCheckInterval] = useState<NodeJS.Timeout | null>(null);
   const isInWechat = isInWechatEnv();
   const isPc = isInPcDevice();
 
@@ -46,28 +47,48 @@ function Login() {
           const { code, url } = data;
           setQrUrl(url);
           setQrLoading(false);
-
-          const loginCheckInterval = setInterval(async () => {
-            const token = await scanQrLogin({
-              code: code,
-            });
-            if (token) {
-              clearInterval(loginCheckInterval);
-            }
-          }, 3000);
+          startTimer(code)
         },
         onError: (error: TResError | unknown) => {
-          const resError = error as TResError;
+          console.log(error)
         },
       },
     );
   };
+
+  const startTimer = (code: string) => {
+    if (loginCheckInterval) {
+      clearInterval(loginCheckInterval);
+    }
+
+    const intervalId = setInterval(async () => {
+      const token = await scanQrLogin({ code });
+      if (token) {
+        clearInterval(intervalId);
+        setLoginCheckInterval(null);
+      }
+    }, 3000);
+
+    setLoginCheckInterval(intervalId);
+  };
+
 
   const handlePreWxScan = () => {
     setQrLoading(true);
     wxQr();
     setShowPCWxLogin(true);
   };
+
+  const handleRereshQr = () => {
+    if (qrLoading) return
+    if (loginCheckInterval) {
+      clearInterval(loginCheckInterval)
+      setLoginCheckInterval(null);
+    }
+    setQrLoading(true);
+    wxQr();
+  }
+
 
   return (
     <>
@@ -153,15 +174,16 @@ function Login() {
       {showPCWxLogin && (
         <Dialog open={showPCWxLogin} onOpenChange={setShowPCWxLogin}>
           <DialogContent
-            className={cn('w-2/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
+            className={cn('w-3/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
           >
             <div className="overflow-x-auto p-0 text-center sm:p-6 sm:pt-4">
               <img
-                style={{ height: '250px', width: '250px', margin: '0 auto' }}
+                style={{ height: '250px', width: '250px', margin: '40px auto 20px auto' }}
                 src={qrUrl}
                 alt=""
+                onClick={() => { handleRereshQr() }}
               />
-              <div>请使用微信扫码</div>
+              <div className='p-t-10'>请使用微信扫码</div>
             </div>
           </DialogContent>
         </Dialog>
