@@ -45,7 +45,6 @@ function Login() {
       {
         onSuccess: (data: TWxQrResponse) => {
           const { code, url } = data;
-          console.log(code, url);
           setQrUrl(url);
           setTicket(code);
           setQrLoading(false);
@@ -78,24 +77,14 @@ function Login() {
 
       {isInWechat && !showAccountLogin ? (
         <div>
-          {
-            // isInMiniWechat ? (<button
-            //   aria-label="Sign in"
-            //   data-testid="login-button"
-            //   onClick={handleWechatMiniLogin}
-            //   className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
-            // >
-            //   微信小程序登录测试
-            // </button>) :
-            <button
-              aria-label="Sign in"
-              data-testid="login-button"
-              onClick={handleWechatAuthLogin}
-              className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
-            >
-              微信授权登录
-            </button>
-          }
+          <button
+            aria-label="Sign in"
+            data-testid="login-button"
+            onClick={handleWechatAuthLogin}
+            className="w-full transform rounded-md bg-green-500 px-4 py-3 tracking-wide text-white transition-colors duration-200 hover:bg-green-550 focus:bg-green-550 focus:outline-none disabled:cursor-not-allowed disabled:hover:bg-green-500"
+          >
+            微信授权登录
+          </button>
           <button
             aria-label="Sign in"
             data-testid="login-button"
