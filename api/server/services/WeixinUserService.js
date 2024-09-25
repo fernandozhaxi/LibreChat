@@ -4,7 +4,7 @@ const User = require('~/models/User');
 const bcrypt = require('bcryptjs');
 const Balance = require('~/models/Balance');
 const WeixinMsgUtil = require('~/server/utils/WeixinMsgUtil');
-const weixinApiUtil = require('~/server/utils/weixinApiUtil');
+const WeixinApiUtil = require('~/server/utils/WeixinApiUtil');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 /**
  * @param {string} signature
@@ -37,7 +37,7 @@ const handleWeixinMsg = async (req) => {
     console.log('关注公众号');
     let user = await User.findOne({ wxOpenId: openid }).lean();
     if (!user) {
-      const { nickname, headimgurl } = await weixinApiUtil.getWeixinUser(null, openid);
+      const { nickname, headimgurl } = await WeixinApiUtil.getWeixinUser(null, openid);
       user = await createWeixinUser(openid, nickname, headimgurl);
     }
     return receiveMessage.getReplyTextMsg('欢迎关注');
