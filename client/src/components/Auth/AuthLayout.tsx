@@ -80,7 +80,7 @@ function AuthLayout({
           )}
           {children}
           {(pathname.includes('login') || pathname.includes('register')) && (
-            <SocialLoginRender startupConfig={startupConfig} />
+            < SocialLoginRender startupConfig={startupConfig} />
           )}
         </div>
       </div>

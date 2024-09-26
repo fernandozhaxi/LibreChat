@@ -62,6 +62,7 @@ router.get('/', async function (req, res) {
         !!process.env.EMAIL_USERNAME &&
         !!process.env.EMAIL_PASSWORD &&
         !!process.env.EMAIL_FROM,
+      wechatEnabled: !!process.env.WX_APPID && !!process.env.WX_SECRET,
       passwordResetEnabled,
       checkBalance: isEnabled(process.env.CHECK_BALANCE),
       showBirthdayIcon:

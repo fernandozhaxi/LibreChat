@@ -341,6 +341,7 @@ export type TStartupConfig = {
   githubLoginEnabled: boolean;
   googleLoginEnabled: boolean;
   openidLoginEnabled: boolean;
+  wechatEnabled: boolean;
   openidLabel: string;
   openidImageUrl: string;
   /** LDAP Auth Configuration */

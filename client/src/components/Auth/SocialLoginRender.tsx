@@ -1,6 +1,7 @@
-import { GoogleIcon, FacebookIcon, OpenIDIcon, GithubIcon, DiscordIcon } from '~/components';
+import { GoogleIcon, FacebookIcon, OpenIDIcon, GithubIcon, DiscordIcon, WechatIcon } from '~/components';
 
 import SocialButton from './SocialButton';
+import WechatButton from './WechatButton';
 
 import { useLocalize } from '~/hooks';
 
@@ -18,7 +19,7 @@ function SocialLoginRender({
   }
 
   const providerComponents = {
-    discord: startupConfig?.discordLoginEnabled && (
+    discord: startupConfig.discordLoginEnabled && (
       <SocialButton
         key="discord"
         enabled={startupConfig.discordLoginEnabled}
@@ -29,7 +30,7 @@ function SocialLoginRender({
         id="discord"
       />
     ),
-    facebook: startupConfig?.facebookLoginEnabled && (
+    facebook: startupConfig.facebookLoginEnabled && (
       <SocialButton
         key="facebook"
         enabled={startupConfig.facebookLoginEnabled}
@@ -40,7 +41,7 @@ function SocialLoginRender({
         id="facebook"
       />
     ),
-    github: startupConfig?.githubLoginEnabled && (
+    github: startupConfig.githubLoginEnabled && (
       <SocialButton
         key="github"
         enabled={startupConfig.githubLoginEnabled}
@@ -51,7 +52,7 @@ function SocialLoginRender({
         id="github"
       />
     ),
-    google: startupConfig?.googleLoginEnabled && (
+    google: startupConfig.googleLoginEnabled && (
       <SocialButton
         key="google"
         enabled={startupConfig.googleLoginEnabled}
@@ -62,7 +63,7 @@ function SocialLoginRender({
         id="google"
       />
     ),
-    openid: startupConfig?.openidLoginEnabled && (
+    openid: startupConfig.openidLoginEnabled && (
       <SocialButton
         key="openid"
         enabled={startupConfig.openidLoginEnabled}
@@ -77,6 +78,11 @@ function SocialLoginRender({
         }
         label={startupConfig.openidLabel}
         id="openid"
+      />
+    ),
+    wechat: startupConfig.wechatEnabled && (
+      <WechatButton
+        key="wechat"
       />
     ),
   };
