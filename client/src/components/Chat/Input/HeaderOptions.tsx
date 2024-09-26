@@ -87,21 +87,7 @@ export default function HeaderOptions({
               )}
               {!noSettings[endpoint] &&
                 interfaceConfig?.parameters === true &&
-                !paramEndpoints.has(endpoint) && isAdmin && (
-                  <Button
-                    aria-label="Settings/parameters"
-                    id="parameters-button"
-                    data-testid="parameters-button"
-                    type="button"
-                    variant="outline"
-                    onClick={triggerAdvancedMode}
-                    className="flex h-[40px] min-w-4 px-3 radix-state-open:bg-surface-hover"
-                  >
-                    <Settings2 className="w-4 text-gray-600 dark:text-white" />
-                  </Button>
-                )}
-              {
-                paramEndpoint === false && (
+                paramEndpoint === false && isAdmin && (
                   <TooltipAnchor
                     id="parameters-button"
                     aria-label={localize('com_ui_model_parameters')}

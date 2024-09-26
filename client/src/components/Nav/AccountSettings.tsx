@@ -7,8 +7,7 @@ import { LinkIcon, GearIcon, DropdownMenuSeparator } from '~/components';
 import FilesView from '~/components/Chat/Input/Files/FilesView';
 import { useAuthContext } from '~/hooks/AuthContext';
 import useAvatar from '~/hooks/Messages/useAvatar';
-import { GearIcon } from '~/components';
-import { UserIcon, LinkIcon } from '~/components/svg';
+import { UserIcon } from '~/components/svg';
 import { useLocalize } from '~/hooks';
 import Management from './Management';
 import Settings from './Settings';
@@ -120,6 +119,7 @@ function AccountSettings() {
 
             <Select.SelectItem
               onClick={() => setShowManagement(true)}
+              className="select-item text-sm"
             >
               <FileText className="icon-md" aria-hidden="true" />
               管理
