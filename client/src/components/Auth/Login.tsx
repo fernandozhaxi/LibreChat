@@ -47,10 +47,12 @@ function Login() {
           const { code, url } = data;
           setQrUrl(url);
           setQrLoading(false);
-          startTimer(code)
+          setTimeout(() => {
+            startTimer(code);
+          }, 1000);
         },
         onError: (error: TResError | unknown) => {
-          console.log(error)
+          console.log(error);
         },
       },
     );
@@ -73,22 +75,30 @@ function Login() {
     setLoginCheckInterval(intervalId);
   };
 
-
   const handlePreWxScan = () => {
+    setQrUrl('');
     setQrLoading(true);
     wxQr();
     setShowPCWxLogin(true);
   };
 
   const handleRereshQr = () => {
-    if (qrLoading) return
+    if (qrLoading) { return; }
     if (loginCheckInterval) {
-      clearInterval(loginCheckInterval)
+      clearInterval(loginCheckInterval);
       setLoginCheckInterval(null);
     }
     setQrLoading(true);
     wxQr();
-  }
+  };
+
+  const handleOpenChange = (v) => {
+    setShowPCWxLogin(v);
+    if (loginCheckInterval) {
+      clearInterval(loginCheckInterval);
+      setLoginCheckInterval(null);
+    }
+  };
 
   return (
     <>
@@ -172,17 +182,27 @@ function Login() {
         </div>
       )}
       {showPCWxLogin && (
-        <Dialog open={showPCWxLogin} onOpenChange={setShowPCWxLogin}>
+        <Dialog open={showPCWxLogin} onOpenChange={(v) => { handleOpenChange(v); }}>
           <DialogContent
             className={cn('w-3/12 overflow-x-auto shadow-2xl dark:bg-gray-700 dark:text-white')}
           >
             <div className="overflow-x-auto p-0 text-center sm:p-6 sm:pt-4">
-              <img
-                style={{ height: '250px', width: '250px', margin: '40px auto 20px auto' }}
-                src={qrUrl}
-                alt=""
-                onClick={() => { handleRereshQr() }}
-              />
+              <div>
+                {
+                  qrUrl ?
+                    <img
+                      style={{ height: '250px', width: '250px', margin: '40px auto 20px auto' }}
+                      src={qrUrl}
+                      alt=""
+                      onClick={() => { handleRereshQr(); }}
+                    /> : <div className='flex justify-center items-center' style={{ background: 'white', height: '250px', width: '250px', margin: '40px auto 20px auto' }}>
+                      <svg className="animate-spin -ml-1 mr-3 h-20 w-20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                }
+              </div>
               <div className='p-t-10'>请使用微信扫码</div>
             </div>
           </DialogContent>
@@ -193,3 +213,4 @@ function Login() {
 }
 
 export default Login;
+
