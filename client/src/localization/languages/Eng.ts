@@ -24,8 +24,10 @@ export default {
   com_error_no_base_url: 'No base URL found. Please provide one and try again.',
   com_warning_resubmit_unsupported:
     'Resubmitting the AI message is not supported for this endpoint.',
-  com_error_invalid_request:
+  com_error_invalid_request_error:
     'The AI service rejected the request due to an error. This could be caused by an invalid API key or an improperly formatted request.',
+  com_error_no_system_messages:
+    'The selected AI service or model does not support system messages. Try using prompts instead of custom instructions.',
   com_error_invalid_user_key: 'Invalid key provided. Please provide a valid key and try again.',
   com_error_expired_user_key:
     'Provided key for {0} expired at {1}. Please provide a new key and try again.',
@@ -360,8 +362,10 @@ export default {
   com_ui_bookmarks_delete_error: 'There was an error deleting the bookmark',
   com_ui_bookmarks_add_to_conversation: 'Add to current conversation',
   com_ui_bookmarks_filter: 'Filter bookmarks...',
+  com_ui_bookmarks_delete: 'Delete Bookmark',
   com_ui_no_bookmarks: 'it seems like you have no bookmarks yet. Click on a chat and add a new one',
   com_ui_no_conversation_id: 'No conversation ID found',
+  com_ui_add_multi_conversation: 'Add multi-conversation',
   com_auth_error_login:
     'Unable to login with the information provided. Please check your credentials and try again.',
   com_auth_error_login_rl:
@@ -560,6 +564,7 @@ export default {
   com_endpoint_export: 'Export',
   com_endpoint_export_share: 'Export/Share',
   com_endpoint_assistant: 'Assistant',
+  com_endpoint_search: 'Search endpoint by name',
   com_endpoint_use_active_assistant: 'Use Active Assistant',
   com_endpoint_assistant_model: 'Assistant Model',
   com_endpoint_save_as_preset: 'Save As Preset',
@@ -620,6 +625,7 @@ export default {
   com_nav_welcome_assistant: 'Please Select an Assistant',
   com_nav_welcome_message: 'How can I help you today?',
   com_nav_auto_scroll: 'Auto-Scroll to latest message on chat open',
+  com_nav_user_msg_markdown: 'Render user messages as markdown',
   com_nav_hide_panel: 'Hide right-most side panel',
   com_nav_modular_chat: 'Enable switching Endpoints mid-conversation',
   com_nav_latex_parsing: 'Parsing LaTeX in messages (may affect performance)',
@@ -771,6 +777,7 @@ export default {
   com_nav_slash_command_description: 'Toggle command "/" for selecting a prompt via keyboard',
   com_nav_command_settings: 'Command Settings',
   com_nav_command_settings_description: 'Customize which commands are available in the chat',
+  com_nav_no_search_results: 'No search results found',
   com_nav_setting_general: 'General',
   com_nav_setting_chat: 'Chat',
   com_nav_setting_beta: 'Beta features',
