@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig, createLogger } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import type { Plugin } from 'vite';
-import legacy from '@vitejs/plugin-legacy';
+// import legacy from '@vitejs/plugin-legacy';
 
 const logger = createLogger();
 const originalWarning = logger.warn;
@@ -54,11 +54,11 @@ export default defineConfig({
   plugins: [
     react(),
     // 加这个是为了转换第三方依赖包markdown中使用的新语法，避免小程序中webview解析markdown语法时报错
-    legacy({
-      targets: ['defaults', 'not IE 11'],
-      polyfills: ['es/object/has-own'],
-      modernPolyfills: ['es/object/has-own'],
-    }),
+    // legacy({
+    //   targets: ['es2015'],
+    //   polyfills: ['es/object/has-own'],
+    //   modernPolyfills: ['es/object/has-own'],
+    // }),
     nodePolyfills(),
     VitePWA({
       injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
@@ -108,7 +108,6 @@ export default defineConfig({
   build: {
     sourcemap: process.env.NODE_ENV === 'development',
     outDir: './dist',
-    target: 'es2015',
     rollupOptions: {
       // external: ['uuid'],
       output: {
