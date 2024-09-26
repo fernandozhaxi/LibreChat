@@ -54,11 +54,11 @@ export default defineConfig({
   plugins: [
     react(),
     // 加这个是为了转换第三方依赖包markdown中使用的新语法，避免小程序中webview解析markdown语法时报错
-    legacy({
-      targets: ['ie 11'],
-      polyfills: ['es/object/has-own'],
-      modernPolyfills: ['es/object/has-own'],
-    }),
+    // legacy({
+    //   targets: ['ie 11'],
+    //   polyfills: ['es/object/has-own'],
+    //   modernPolyfills: ['es/object/has-own'],
+    // }),
     nodePolyfills(),
     VitePWA({
       injectRegister: 'auto', // 'auto' | 'manual' | 'disabled'
