@@ -83,6 +83,7 @@ function SocialLoginRender({
     wechat: startupConfig.wechatEnabled && (
       <WechatButton
         key="wechat"
+        serverDomain={startupConfig.serverDomain}
       />
     ),
   };
