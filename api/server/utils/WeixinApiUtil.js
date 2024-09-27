@@ -77,36 +77,32 @@ class WeixinApiUtil {
    * @return
    */
   async getQrCode() {
-    try {
-      const accessToken = await this.getAccessToken();
-      if (accessToken) {
-        const url = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${accessToken}`;
+    const accessToken = await this.getAccessToken();
+    if (accessToken) {
+      const url = `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${accessToken}`;
 
-        const jsonBody = {
-          expire_seconds: this.QR_CODE_TICKET_TIMEOUT,
-          action_name: 'QR_STR_SCENE',
-          action_info: {
-            scene: {
-              scene_str: uuidv4(),
-            },
+      const jsonBody = {
+        expire_seconds: this.QR_CODE_TICKET_TIMEOUT,
+        action_name: 'QR_STR_SCENE',
+        action_info: {
+          scene: {
+            scene_str: uuidv4(),
           },
-        };
-        const response = await fetch(url, {
-          method: 'POST',
-          body: JSON.stringify(jsonBody),
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        const weixinQrCode = {
-          code: data.ticket,
-          url: `${this.QR_CODE_URL_PREFIX}${encodeURIComponent(data.ticket)}`,
-        };
-        return weixinQrCode;
+        },
+      };
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(jsonBody),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } catch (error) {
-      console.error('Fetch error:', error);
+      const data = await response.json();
+      const weixinQrCode = {
+        code: data.ticket,
+        url: `${this.QR_CODE_URL_PREFIX}${encodeURIComponent(data.ticket)}`,
+      };
+      return weixinQrCode;
     }
   }
 }

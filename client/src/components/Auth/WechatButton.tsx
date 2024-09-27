@@ -36,11 +36,13 @@ const WechatButton = () => {
       {
         onSuccess: (data: TWxQrResponse) => {
           const { code, url } = data;
-          setQrUrl(url);
-          setQrLoading(false);
-          setTimeout(() => {
-            startTimer(code);
-          }, 1000);
+          if (code && url) {
+            setQrUrl(url);
+            setQrLoading(false);
+            setTimeout(() => {
+              startTimer(code);
+            }, 1000);
+          }
         },
         onError: (error: TResError | unknown) => {
           console.log(error);
@@ -66,12 +68,13 @@ const WechatButton = () => {
     setLoginCheckInterval(intervalId);
   };
 
-  const handleRereshQr = () => {
+  const handleRefreshQr = () => {
     if (qrLoading) { return; }
     if (loginCheckInterval) {
       clearInterval(loginCheckInterval);
       setLoginCheckInterval(null);
     }
+    setQrUrl('');
     setQrLoading(true);
     wxQr();
   };
@@ -106,6 +109,7 @@ const WechatButton = () => {
         className="flex w-full justify-center items-center space-x-3 rounded-2xl border border-border-light bg-surface-primary px-5 py-3 text-text-primary transition-colors duration-200 hover:bg-surface-tertiary"
         data-testid='wechat'
         onClick={() => handleWxLogin()}
+        style={{ cursor: 'pointer' }}
       >
         <WechatIcon />
         <p>微信登录</p>
@@ -124,7 +128,7 @@ const WechatButton = () => {
                       style={{ height: '250px', width: '250px', margin: '40px auto 20px auto' }}
                       src={qrUrl}
                       alt=""
-                      onClick={() => { handleRereshQr(); }}
+                      onClick={() => { handleRefreshQr(); }}
                     /> : <div className='flex justify-center items-center' style={{ background: 'white', height: '250px', width: '250px', margin: '40px auto 20px auto' }}>
                       <svg className="animate-spin -ml-1 mr-3 h-20 w-20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -133,7 +137,10 @@ const WechatButton = () => {
                     </div>
                 }
               </div>
-              <div className='p-t-10'>请使用微信扫码</div>
+              <div className='p-t-10 flex justify-center items-center'>
+                <WechatIcon />
+                <span style={{ marginLeft: '10px' }} >请使用微信扫码</span>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
