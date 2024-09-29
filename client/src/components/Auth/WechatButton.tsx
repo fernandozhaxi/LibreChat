@@ -10,7 +10,7 @@ import { useWxQrMutation } from 'librechat-data-provider/react-query';
 import type { TWxQrResponse } from 'librechat-data-provider';
 import { TResError } from '~/common';
 
-const WechatButton = (serverDomain: string, wechatAppId: string) => {
+const WechatButton = ({ serverDomain, wechatAppid }) => {
   const { scanQrLogin } = useAuthContext();
   const [showPCWxLogin, setShowPCWxLogin] = useState(false);
   const [qrLoading, setQrLoading] = useState(false);
@@ -20,13 +20,16 @@ const WechatButton = (serverDomain: string, wechatAppId: string) => {
 
   const handleWechatAuthLogin = () => {
     const url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
-    const appid = `appid=${wechatAppId}`;
+    const appid = `appid=${wechatAppid}`;
     const redirect = `&redirect_uri=${encodeURIComponent(serverDomain)}`;
     const type = '&response_type=code';
     const scope = '&scope=snsapi_userinfo';
     const state = '&state=wechat';
     const queryUrl = url + appid + type + scope + state + redirect;
-    window.location.href = queryUrl + '#wechat_redirect';
+    console.log('serverDomain', serverDomain);
+    console.log('wechatAppId', wechatAppid);
+
+    // window.location.href = queryUrl + '#wechat_redirect';
   };
 
   const wxGetQr = useWxQrMutation();

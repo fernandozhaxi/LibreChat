@@ -14,6 +14,8 @@ function SocialLoginRender({
 }) {
   const localize = useLocalize();
 
+  console.log(startupConfig);
+
   if (!startupConfig) {
     return null;
   }
@@ -84,7 +86,7 @@ function SocialLoginRender({
       <WechatButton
         key="wechat"
         serverDomain={startupConfig.serverDomain}
-        appid={startupConfig.wechatAppId}
+        wechatAppid={startupConfig.wechatAppId}
       />
     ),
   };
