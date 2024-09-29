@@ -26,10 +26,7 @@ const WechatButton = ({ serverDomain, wechatAppid }) => {
     const scope = '&scope=snsapi_userinfo';
     const state = '&state=wechat';
     const queryUrl = url + appid + type + scope + state + redirect;
-    console.log('serverDomain', serverDomain);
-    console.log('wechatAppId', wechatAppid);
-
-    // window.location.href = queryUrl + '#wechat_redirect';
+    window.location.href = queryUrl + '#wechat_redirect';
   };
 
   const wxGetQr = useWxQrMutation();
