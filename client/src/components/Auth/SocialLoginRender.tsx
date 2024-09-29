@@ -84,6 +84,7 @@ function SocialLoginRender({
       <WechatButton
         key="wechat"
         serverDomain={startupConfig.serverDomain}
+        appid={startupConfig.wechatAppId}
       />
     ),
   };
