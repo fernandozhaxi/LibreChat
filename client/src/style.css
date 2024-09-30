@@ -87,7 +87,7 @@ html {
   --surface-active: var(--gray-500);
   --surface-hover: var(--gray-600);
   --surface-primary: var(--gray-900);
-  --surface-primary-alt: var(--gray-850);
+  --surface-primary-alt: var(--gray-800);
   --surface-primary-contrast: var(--gray-850);
   --surface-secondary: var(--gray-800);
   --surface-tertiary: var(--gray-700);
