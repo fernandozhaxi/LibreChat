@@ -8,7 +8,7 @@ import {
 import { FileUpload, TooltipAnchor } from '~/components/ui';
 import { useFileHandling, useLocalize } from '~/hooks';
 import { useGetFileConfig } from '~/data-provider';
-import { AttachmentIcon } from '~/components/svg';
+import { NewAttachmentIcon } from '~/components/svg';
 import { cn } from '~/utils';
 
 const AttachFile = ({
@@ -52,7 +52,7 @@ const AttachFile = ({
           description={localize('com_sidepanel_attach_files')}
         >
           <div className="flex w-full items-center justify-center gap-2">
-            <AttachmentIcon />
+            <NewAttachmentIcon />
           </div>
         </TooltipAnchor>
       </FileUpload>
