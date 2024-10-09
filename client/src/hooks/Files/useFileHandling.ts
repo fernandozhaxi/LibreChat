@@ -118,7 +118,7 @@ const useFileHandling = (params?: UseFileHandling) => {
       clearUploadTimer(file_id as string);
       deleteFileById(file_id as string);
       setError(
-        (error as TError)?.response?.data?.message ?? 'An error occurred while uploading the file.',
+        (error as TError).response?.data?.message ?? 'An error occurred while uploading the file.',
       );
     },
   });
@@ -139,10 +139,10 @@ const useFileHandling = (params?: UseFileHandling) => {
     );
     formData.append('file_id', extendedFile.file_id);
     if (extendedFile.width) {
-      formData.append('width', extendedFile.width?.toString());
+      formData.append('width', extendedFile.width.toString());
     }
     if (extendedFile.height) {
-      formData.append('height', extendedFile.height?.toString());
+      formData.append('height', extendedFile.height.toString());
     }
 
     if (params?.additionalMetadata) {
@@ -162,7 +162,7 @@ const useFileHandling = (params?: UseFileHandling) => {
       const version = endpointsConfig?.[endpoint]?.version ?? defaultAssistantsVersion[endpoint];
       formData.append('version', version);
       formData.append('assistant_id', conversation.assistant_id);
-      formData.append('model', conversation?.model ?? '');
+      formData.append('model', conversation.model ?? '');
       formData.append('message_file', 'true');
     }
     if (isAssistantsEndpoint(endpoint) && !formData.get('version')) {
@@ -238,7 +238,7 @@ const useFileHandling = (params?: UseFileHandling) => {
         (file) =>
           `${file.file?.name ?? file.filename}-${file.size}-${file.type?.split('/')[0] ?? 'file'}`,
       ),
-      ...fileList.map((file) => `${file.name}-${file.size}-${file.type?.split('/')[0] ?? 'file'}`),
+      ...fileList.map((file) => `${file.name}-${file.size}-${file.type.split('/')[0] ?? 'file'}`),
     ];
 
     const uniqueFilesSet = new Set(combinedFilesInfo);
@@ -251,7 +251,67 @@ const useFileHandling = (params?: UseFileHandling) => {
     return true;
   };
 
-  const loadImage = (extendedFile: ExtendedFile, preview: string) => {
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        img.src = event.target?.result as string;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        let quality = 1; // 初始质量
+        let byteSize = file.size;
+
+        const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+
+        const adjustCompression = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              byteSize = blob.size; // 更新当前大小
+
+              if (byteSize > MAX_SIZE) {
+                // 缩小质量
+                quality -= 0.01; // 降低质量
+                if (quality > 0) {
+                  adjustCompression(); // 继续调整
+                } else {
+                  // 最小质量下仍然大于2MB，返回最大可用质量的图像
+                  resolve(new File([blob], file.name, { type: file.type }));
+                }
+              } else {
+                // 大小符合要求
+                resolve(new File([blob], file.name, { type: file.type }));
+              }
+            } else {
+              reject(new Error('Compression failed.'));
+            }
+          }, file.type, quality);
+        };
+
+        adjustCompression(); // 开始压缩
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const loadImage = async (extendedFile: ExtendedFile, preview: string) => {
+    // 检查文件大小是否超过2MB
+    if (extendedFile.size > 2 * 1024 * 1024) {
+      const compressedFile = await compressImage(extendedFile.file);
+
+      extendedFile.file = compressedFile;
+      extendedFile.size = compressedFile.size;
+    }
+
     const img = new Image();
     img.onload = async () => {
       extendedFile.width = img.width;
@@ -300,7 +360,7 @@ const useFileHandling = (params?: UseFileHandling) => {
 
         addFile(extendedFile);
 
-        if (originalFile.type?.split('/')[0] === 'image') {
+        if (originalFile.type.split('/')[0] === 'image') {
           loadImage(extendedFile, preview);
           continue;
         }
