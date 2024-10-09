@@ -19,6 +19,7 @@ import { useDelayedUploadToast } from './useDelayedUploadToast';
 import { useToastContext } from '~/Providers/ToastContext';
 import { useChatContext } from '~/Providers/ChatContext';
 import useUpdateFiles from './useUpdateFiles';
+import piexif from 'piexifjs';
 
 const { checkType } = defaultFileConfig;
 
@@ -251,13 +252,33 @@ const useFileHandling = (params?: UseFileHandling) => {
     return true;
   };
 
+  function dataURLToFile(dataURL, filename, type) {
+    const arr = dataURL.split(',');
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    // 创建 Blob 对象
+    const blob = new Blob([u8arr], type);
+    // 创建 File 对象
+    return new File([blob], filename, type);
+  }
+
   const compressImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const reader = new FileReader();
+      let exifStr = '';
 
       reader.onload = (event) => {
-        img.src = event.target?.result as string;
+        const src = event.target?.result as string;
+        img.src = src;
+        const exifObj = piexif.load(src);
+        exifStr = piexif.dump(exifObj);
       };
 
       img.onload = () => {
@@ -276,20 +297,17 @@ const useFileHandling = (params?: UseFileHandling) => {
           canvas.toBlob((blob) => {
             if (blob) {
               byteSize = blob.size; // 更新当前大小
-
               if (byteSize > MAX_SIZE) {
                 // 缩小质量
                 quality -= 0.01; // 降低质量
                 if (quality > 0) {
-                  adjustCompression(); // 继续调整
-                } else {
-                  // 最小质量下仍然大于2MB，返回最大可用质量的图像
-                  resolve(new File([blob], file.name, { type: file.type }));
+                  return adjustCompression(); // 继续调整
                 }
-              } else {
-                // 大小符合要求
-                resolve(new File([blob], file.name, { type: file.type }));
               }
+              const dataUrl = canvas.toDataURL(file.type, quality);
+              const inserted = piexif.insert(exifStr, dataUrl);
+              const compressionFile = dataURLToFile(inserted, file.name, { type: file.type });
+              resolve(compressionFile);
             } else {
               reject(new Error('Compression failed.'));
             }
@@ -306,10 +324,9 @@ const useFileHandling = (params?: UseFileHandling) => {
   const loadImage = async (extendedFile: ExtendedFile, preview: string) => {
     // 检查文件大小是否超过2MB
     if (extendedFile.size > 2 * 1024 * 1024) {
-      const compressedFile = await compressImage(extendedFile.file);
-
-      extendedFile.file = compressedFile;
-      extendedFile.size = compressedFile.size;
+      const file = await compressImage(extendedFile.file);
+      extendedFile.file = file;
+      extendedFile.size = file.size;
     }
 
     const img = new Image();
