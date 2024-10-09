@@ -28,18 +28,18 @@ const handleWeixinMsg = async (req) => {
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
-    return handleScanLogin(receiveMessage);
-  }
-  // 关注公众号
-  if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     let user = await User.findOne({ wxOpenId: openid }).lean();
     if (!user) {
       const { nickname, headimgurl } = await WeixinApiUtil.getWeixinUser(null, openid);
       await createWeixinUser(openid, nickname, headimgurl);
     }
-    return receiveMessage.getReplyTextMsg('欢迎关注!');
+    return handleScanLogin(receiveMessage, openid);
   }
-  return receiveMessage.getReplyTextMsg('收到（自动回复）');
+  // 关注公众号
+  // if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
+  //   return receiveMessage.getReplyTextMsg('欢迎关注!');
+  // }
+  // return receiveMessage.getReplyTextMsg('收到（自动回复）');
 };
 
 /**
@@ -53,6 +53,7 @@ const handleScanLogin = (receiveMessage) => {
     const openId = receiveMessage.fromUserName;
     WeixinQrCodeCacheUtil.put(ticket, openId);
   }
+
   return receiveMessage.getReplyTextMsg('登录成功！');
 };
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ListeningIcon, Spinner } from '~/components/svg';
+import { ListeningIcon, WechatVioceIcon, Spinner } from '~/components/svg';
 import { useLocalize, useSpeechToText } from '~/hooks';
 import { useChatFormContext } from '~/Providers';
 import { TooltipAnchor } from '~/components/ui';
@@ -65,12 +65,12 @@ export default function AudioRecorder({
 
   const renderIcon = () => {
     if (isListening) {
-      return <ListeningIcon className="stroke-red-500" />;
+      return <WechatVioceIcon className="stroke-red-500" />;
     }
     if (isLoading) {
       return <Spinner className="stroke-gray-700 dark:stroke-gray-300" />;
     }
-    return <ListeningIcon className="stroke-gray-700 dark:stroke-gray-300" />;
+    return <WechatVioceIcon className="stroke-gray-700 dark:stroke-gray-300" />;
   };
 
   return (
