@@ -33,6 +33,8 @@ const Session = require('./Session');
 const Balance = require('./Balance');
 const User = require('./User');
 const Key = require('./Key');
+const Goods = require('./Goods');
+const Order = require('./Order');
 
 module.exports = {
   comparePassword,
@@ -79,4 +81,6 @@ module.exports = {
   Key,
   Session,
   Balance,
+  Goods,
+  Order,
 };

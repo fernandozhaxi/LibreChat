@@ -21,9 +21,9 @@ const checkSignature = (signature, timestamp, nonce) => {
 };
 
 /**
- * 处理微信对我们服务器的回调
+ * 处理微信对我们服务器的登录回调
  */
-const handleWeixinMsg = async (req) => {
+const handleWeixinLoginMsg = async (req) => {
   const { openid } = req.query;
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
@@ -35,11 +35,6 @@ const handleWeixinMsg = async (req) => {
     }
     return handleScanLogin(receiveMessage, openid);
   }
-  // 关注公众号
-  // if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
-  //   return receiveMessage.getReplyTextMsg('欢迎关注!');
-  // }
-  // return receiveMessage.getReplyTextMsg('收到（自动回复）');
 };
 
 /**
@@ -88,6 +83,6 @@ const createWeixinUser = async (openid, nickname, avatar) => {
 
 module.exports = {
   checkSignature,
-  handleWeixinMsg,
+  handleWeixinLoginMsg,
   createWeixinUser,
 };
