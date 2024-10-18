@@ -114,6 +114,66 @@ export type TUser = {
   createdAt: string;
   updatedAt: string;
   tokenCredits?: number;
+  vipLevel?: number;
+  vipStartTime?: number;
+  vipEndTime?: number;
+};
+
+export type TGoods = {
+  id: string;
+  name: string;
+  marketPrice: string;
+  price: string;
+  type: string;
+  status: number;
+  level: number;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TOrder = {
+  id: string;
+  total: number;
+  goodsId: string;
+  goodsName: string;
+  goodsNum: number;
+  goodsType: string;
+  payType: string;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TCreateGoodsResponse = {
+  message: string;
+};
+
+export type TCreateGoods = {
+  name: string;
+  marketPrice: string;
+  price: string;
+  type: string;
+  desc: string;
+  count: number;
+  status: number;
+  level: number;
+  points: number;
+};
+
+export type TCreateOrderResponse = {
+  message: string;
+};
+
+export type TCreateOrder = {
+  user: string,
+  total: number,
+  status: number,
+  payType: string,
+  goodsNum: number,
+  goodsId: string,
+  goodsName: string,
+  goodsType: string,
 };
 
 export type TGetConversationsResponse = {
@@ -536,3 +596,12 @@ export type TAcceptTermsResponse = {
 };
 
 export type TBannerResponse = TBanner | null;
+
+export type TUpdateGoods = {
+  id: string;
+};
+
+export type TSwitchGoodsStatus = {
+  id: string;
+  status: number;
+};

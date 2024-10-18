@@ -23,6 +23,10 @@ import type {
   ConversationListParams,
   GetUsersResponse,
   GetUsersParams,
+  GetGoodsResponse,
+  GetGoodsParams,
+  GetOrdersResponse,
+  GetOrdersParams,
   Assistant,
   AssistantListParams,
   AssistantListResponse,
@@ -659,8 +663,16 @@ export const useGetRandomPrompts = (
   );
 };
 
-export const useGerUsersQuery = (params: GetUsersParams): UseQueryResult<GetUsersResponse> => {
+export const useGetUsersQuery = (params: GetUsersParams): UseQueryResult<GetUsersResponse> => {
   return useQuery([QueryKeys.users], () => dataService.getUsers(params));
+};
+
+export const useGetGoodsQuery = (params: GetGoodsParams): UseQueryResult<GetGoodsResponse> => {
+  return useQuery([QueryKeys.goods], () => dataService.getGoods(params));
+};
+
+export const useGetOrdersQuery = (params: GetOrdersParams): UseQueryResult<GetOrdersResponse> => {
+  return useQuery([QueryKeys.orders], () => dataService.getOrders(params));
 };
 
 export const useUserTermsQuery = (

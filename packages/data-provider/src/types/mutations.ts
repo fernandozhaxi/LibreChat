@@ -215,6 +215,7 @@ export type ResendVerifcationOptions = MutationOptions<
   types.VerifyEmailResponse,
   types.TResendVerificationEmail
 >;
+
 export type RegistrationOptions = MutationOptions<
   types.TRegisterUserResponse,
   types.TRegisterUser,
@@ -247,4 +248,18 @@ export type AcceptTermsMutationOptions = MutationOptions<
   void,
   unknown,
   void
+>;
+
+export type CreateGoodsOptions = MutationOptions<
+  types.TCreateGoodsResponse,
+  types.TCreateGoods,
+  unknown,
+  types.TError
+>;
+
+export type CreateOrderOptions = MutationOptions<
+  types.TCreateOrderResponse,
+  types.TCreateOrder,
+  unknown,
+  types.TError
 >;

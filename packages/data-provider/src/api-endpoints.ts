@@ -16,6 +16,27 @@ export const updateBalance = () => '/api/balance/update';
 export const getUsers = (pageNumber: number, pageSize: number, searchKey: string) =>
   `/api/user/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;
 
+export const createGoods = () =>
+  '/api/goods/create';
+
+export const getGoods = (pageNumber: number, pageSize: number, searchKey: string) =>
+  `/api/goods/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;
+
+export const deleteGoods = () =>
+  '/api/goods/delete';
+
+export const updateGoods = () =>
+  '/api/goods/update';
+
+export const switchGoodsStatus = () =>
+  '/api/goods/switchStatus';
+
+export const getOrders = (pageNumber: number, pageSize: number, searchKey: string) =>
+  `/api/order/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;
+
+export const createOrder = () =>
+  '/api/order/create';
+
 export const messages = (conversationId: string, messageId?: string) =>
   `/api/messages/${conversationId}${messageId ? `/${messageId}` : ''}`;
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useGetUsersQuery } from '~/data-provider';
+import { useGetOrdersQuery } from '~/data-provider';
 import {
   Button,
   Input,
@@ -10,27 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui';
-import EditBalance from './EditBalance';
-import CreatUser from './CreatUser';
-import DeleteButton from './DeleteButton';
 import { NewChatIcon } from '~/components/svg';
 import { formatDate } from '~/utils';
 import { TUser } from 'librechat-data-provider';
 import useLocalize from '~/hooks/useLocalize';
 
-export default function Account() {
+export default function Order() {
   const localize = useLocalize();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentUser, setCurrentUser] = useState<TUser | undefined>(undefined);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
-  const [showCreatUserDialog, setShowCreatUserDialog] = useState(false);
+  const [currentGoods, setCurrentGoods] = useState<TUser | undefined>(undefined);
+
   const [searchKey, setSearchKey] = useState('');
   const pageSize = 10; // 每页的用户数
 
   const { data: { list: users = [], pages = 0, count: totalUsers = 0 } = {}, refetch } =
-    useGetUsersQuery({
+    useGetOrdersQuery({
       pageNumber: currentPage,
       pageSize: pageSize,
       searchKey: searchKey,
@@ -56,19 +51,15 @@ export default function Account() {
     }
   };
 
-  const haldlePreDeleteUser = (user) => {
-    setCurrentUser(user);
-    setShowDeleteDialog(true);
+  const haldlePreDisabledUser = (user) => {
+    setCurrentGoods(user);
   };
-
   const handlePreEditBalance = (user) => {
-    setCurrentUser(user);
-    setShowBalanceDialog(true);
+    setCurrentGoods(user);
   };
 
   const handlePreCreatUser = (user?: TUser) => {
-    setCurrentUser(user);
-    setShowCreatUserDialog(true);
+    setCurrentGoods(user);
   };
 
   const handleRefreshList = () => {
@@ -98,25 +89,19 @@ export default function Account() {
           <TableHeader>
             <TableRow>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                姓名
+                商品名称
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                用户名
+                市场价格
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                邮箱
+                售价
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                Balance
+                类型
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                角色
-              </TableHead>
-              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                创建时间
-              </TableHead>
-              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                操作
+                状态
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -131,35 +116,20 @@ export default function Account() {
                     {row.name}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.username}
+                    {row.marketPrice}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.email}
-                  </TableCell>
-
-                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    <button
-                      className="text-token-text-primary flex"
-                      onClick={() => handlePreEditBalance(row)}
-                      title="点击编辑balance"
-                    >
-                      <div className="min-w-[100px] text-left"> {row.tokenCredits}</div>
-                      <NewChatIcon className="size-5" />
-                    </button>
+                    {row.price}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.role === 'ADMIN' ? '管理员' : '普通用户'}
+                    {row.type}
                   </TableCell>
-                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {formatDate(row.createdAt)}
-                  </TableCell>
-
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     <Button
-                      onClick={() => haldlePreDeleteUser(row)}
+                      onClick={() => haldlePreDisabledUser(row)}
                       className="bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
                     >
-                      删除
+                      禁用/启用
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -195,30 +165,6 @@ export default function Account() {
           下一页
         </Button>
       </div>
-
-      {showDeleteDialog && (
-        <DeleteButton
-          user={currentUser}
-          showDialog={showDeleteDialog}
-          setShowDialog={setShowDeleteDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showBalanceDialog && (
-        <EditBalance
-          user={currentUser}
-          showDialog={showBalanceDialog}
-          setShowDialog={setShowBalanceDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showCreatUserDialog && (
-        <CreatUser
-          showDialog={showCreatUserDialog}
-          setShowDialog={setShowCreatUserDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
     </>
   );
 }

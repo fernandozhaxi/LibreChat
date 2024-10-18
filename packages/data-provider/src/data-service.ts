@@ -50,6 +50,43 @@ export const getUsers = (params: q.GetUsersParams): Promise<q.GetUsersResponse> 
   return request.get(endpoints.getUsers(pageNumber, pageSize, searchKey));
 };
 
+export const createGoods = (params: t.TCreateGoods): Promise<t.TCreateGoodsResponse> => {
+  return request.post(endpoints.createGoods(), params);
+};
+
+export const getGoods = (params: q.GetGoodsParams): Promise<q.GetGoodsResponse> => {
+  const pageNumber = params.pageNumber;
+  const pageSize = params.pageSize;
+  const searchKey = params.searchKey;
+  return request.get(endpoints.getGoods(pageNumber, pageSize, searchKey));
+};
+
+export const deleteGoods = (id: string): Promise<boolean> => {
+  return request.post(endpoints.deleteGoods(), { id });
+};
+
+export const updateGoods = (params: t.TCreateGoods): Promise<boolean> => {
+  return request.post(endpoints.updateGoods(), params);
+};
+
+export const switchGoodsStatus = (params: {
+  id: string,
+  status: number,
+}): Promise<boolean> => {
+  return request.post(endpoints.switchGoodsStatus(), params);
+};
+
+export const getOrders = (params: q.GetOrdersParams): Promise<q.GetOrdersResponse> => {
+  const pageNumber = params.pageNumber;
+  const pageSize = params.pageSize;
+  const searchKey = params.searchKey;
+  return request.get(endpoints.getOrders(pageNumber, pageSize, searchKey));
+};
+
+export const createOrder = (params: t.TCreateOrder): Promise<t.TCreateOrderResponse> => {
+  return request.post(endpoints.createOrder(), params);
+};
+
 export function getMessagesByConvoId(conversationId: string): Promise<s.TMessage[]> {
   if (conversationId === 'new') {
     return Promise.resolve([]);

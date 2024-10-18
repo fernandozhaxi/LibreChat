@@ -3,7 +3,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import { cn } from '~/utils/';
 import { useMediaQuery } from '~/hooks';
 import { UserIcon } from '~/components/svg';
-import { Account } from './ManagementTabs';
+import { Account, Goods, Order } from './ManagementTabs';
 
 export default function Management({ open, onOpenChange }) {
   const isSmallScreen = useMediaQuery('(max-width: 767px)');
@@ -28,7 +28,6 @@ export default function Management({ open, onOpenChange }) {
               style={{ outline: 'none' }}
             >
               <Tabs.Trigger
-                tabIndex={0}
                 className={cn(
                   'group m-1 flex items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary transition-all duration-200 ease-in-out radix-state-active:bg-surface-tertiary radix-state-active:text-text-primary dark:radix-state-active:bg-surface-active',
                   isSmallScreen
@@ -41,10 +40,42 @@ export default function Management({ open, onOpenChange }) {
                 <UserIcon />
                 用户
               </Tabs.Trigger>
+              <Tabs.Trigger
+                className={cn(
+                  'group m-1 flex items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary transition-all duration-200 ease-in-out radix-state-active:bg-surface-tertiary radix-state-active:text-text-primary dark:radix-state-active:bg-surface-active',
+                  isSmallScreen
+                    ? 'flex-1 items-center justify-center text-nowrap p-1 px-3 text-sm text-text-secondary'
+                    : 'bg-surface-tertiary-alt',
+                )}
+                value='goods'
+                style={{ userSelect: 'none' }}
+              >
+                <UserIcon />
+                商品
+              </Tabs.Trigger>
+              <Tabs.Trigger
+                className={cn(
+                  'group m-1 flex items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm text-text-primary transition-all duration-200 ease-in-out radix-state-active:bg-surface-tertiary radix-state-active:text-text-primary dark:radix-state-active:bg-surface-active',
+                  isSmallScreen
+                    ? 'flex-1 items-center justify-center text-nowrap p-1 px-3 text-sm text-text-secondary'
+                    : 'bg-surface-tertiary-alt',
+                )}
+                value='order'
+                style={{ userSelect: 'none' }}
+              >
+                <UserIcon />
+                订单
+              </Tabs.Trigger>
             </Tabs.List>
             <div className="overflow-auto sm:w-full sm:max-w-none md:pr-0.5 md:pt-0.5">
               <Tabs.Content value="account">
                 <Account />
+              </Tabs.Content>
+              <Tabs.Content value="goods">
+                <Goods />
+              </Tabs.Content>
+              <Tabs.Content value="order">
+                <Order />
               </Tabs.Content>
             </div>
           </Tabs.Root>

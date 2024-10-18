@@ -14,16 +14,16 @@ const wxConfig = {
   mchid: WX_MCH_ID,  // 商户号
   apiV3Key: WX_API_KEY,
   serial_no: WX_SERIAL_NO, //商户API证书序列号
-  publicKey: fs.readFileSync('~/server/cert/apiclient_cert.pem').toString(),
-  privateKey: fs.readFileSync('~/server/cert/apiclient_key.pem').toString(),
+  // publicKey: fs.readFileSync('~/server/cert/apiclient_cert.pem').toString(),
+  // privateKey: fs.readFileSync('~/server/cert/apiclient_key.pem').toString(),
 };
 
-const wxPay = new WxPay({
-  appid: wxConfig.appid,
-  mchid: wxConfig.mchid,
-  publicKey: wxConfig.publicKey,
-  privateKey: wxConfig.privateKey,
-});
+// const wxPay = new WxPay({
+//   appid: wxConfig.appid,
+//   mchid: wxConfig.mchid,
+//   publicKey: wxConfig.publicKey,
+//   privateKey: wxConfig.privateKey,
+// });
 
 class WeixinApiUtil {
   constructor() {

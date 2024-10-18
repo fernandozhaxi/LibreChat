@@ -1463,3 +1463,39 @@ export const useAcceptTermsMutation = (
     onMutate: options?.onMutate,
   });
 };
+
+export const useDeleteGoodMutation = (
+  options?: t.MutationOptions<boolean, string>,
+): UseMutationResult<boolean, unknown, string, unknown> => {
+  return useMutation([MutationKeys.deleteGoodsById], {
+    mutationFn: (id: string) => dataService.deleteGoods(id),
+    ...(options || {}),
+    onSuccess: (...args) => {
+      options?.onSuccess?.(...args);
+    },
+  });
+};
+
+export const useSwitchGoodsStatusMutation = (
+  options?: t.MutationOptions<boolean, t.TSwitchGoodsStatus>,
+): UseMutationResult<boolean, unknown, t.TSwitchGoodsStatus, unknown> => {
+  return useMutation([MutationKeys.switchGoodsStatus], {
+    mutationFn: (data: t.TSwitchGoodsStatus) => dataService.switchGoodsStatus(data),
+    ...(options || {}),
+    onSuccess: (...args) => {
+      options?.onSuccess?.(...args);
+    },
+  });
+};
+
+export const useUpdateGoodsMutation = (
+  options?: t.MutationOptions<boolean, t.TUpdateGoods>,
+): UseMutationResult<boolean, unknown, t.TUpdateGoods, unknown> => {
+  return useMutation([MutationKeys.updateGoods], {
+    mutationFn: (data: t.TUpdateGoods) => dataService.updateGoods(data),
+    ...(options || {}),
+    onSuccess: (...args) => {
+      options?.onSuccess?.(...args);
+    },
+  });
+};

@@ -26,6 +26,25 @@ const {
   deleteMessagesSince,
   deleteMessages,
 } = require('./Message');
+
+const {
+  deleteGoodsById,
+  getGoodsById,
+  updateGoods,
+  createGoods,
+  countGoods,
+  findGoods,
+  getGoodsByPage,
+} = require('./goodsMethods');
+
+const {
+  deleteOrderById,
+  getOrderById,
+  createOrder,
+  findOrder,
+  getOrdersByPage,
+} = require('./orderMethods');
+
 const { getConvoTitle, getConvo, saveConvo, deleteConvos } = require('./Conversation');
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
 const { createToken, findToken, updateToken, deleteTokens } = require('./Token');
@@ -76,6 +95,20 @@ module.exports = {
   findToken,
   updateToken,
   deleteTokens,
+
+  deleteGoodsById,
+  getGoodsById,
+  updateGoods,
+  createGoods,
+  countGoods,
+  findGoods,
+  getGoodsByPage,
+
+  deleteOrderById,
+  getOrderById,
+  createOrder,
+  findOrder,
+  getOrdersByPage,
 
   User,
   Key,

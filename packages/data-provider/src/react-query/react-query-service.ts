@@ -524,3 +524,31 @@ export const useGetBannerQuery = (
     ...config,
   });
 };
+
+// 创建商品
+export const useCreateGoodsMutation = (
+  options?: m.CreateGoodsOptions,
+): UseMutationResult<t.TError, unknown, t.TCreateGoods, unknown> => {
+  return useMutation((payload: t.TCreateGoods) => dataService.createGoods(payload), {
+    ...options,
+    onSuccess: (...args) => {
+      if (options?.onSuccess) {
+        options.onSuccess(...args);
+      }
+    },
+  });
+};
+
+// 创建订单
+export const useCreateOrderMutation = (
+  options?: m.CreateOrderOptions,
+): UseMutationResult<t.TError, unknown, t.TCreateOrder, unknown> => {
+  return useMutation((payload: t.TCreateOrder) => dataService.createOrder(payload), {
+    ...options,
+    onSuccess: (...args) => {
+      if (options?.onSuccess) {
+        options.onSuccess(...args);
+      }
+    },
+  });
+};

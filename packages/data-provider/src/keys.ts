@@ -45,6 +45,8 @@ export enum QueryKeys {
   health = 'health',
   userTerms = 'userTerms',
   banner = 'banner',
+  goods = 'goods',
+  orders = 'orders',
 }
 
 export enum MutationKeys {
@@ -67,4 +69,7 @@ export enum MutationKeys {
   getAllUsers = 'getAllUsers',
   deleteUserByEmail = 'deleteUserByEmail',
   updateBalance = 'updateBalance',
+  switchGoodsStatus = 'switchGoodsStatus',
+  deleteGoodsById = 'deleteGoodsById',
+  updateGoods = 'updateGoods',
 }

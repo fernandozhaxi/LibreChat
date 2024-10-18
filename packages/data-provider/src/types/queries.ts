@@ -88,3 +88,35 @@ export type GetUsersResponse = {
   pages: string | number;
   count: string | number;
 };
+
+// Parameters for listing goods (e.g., for pagination)
+export type GetGoodsParams = {
+  searchKey: string;
+  pageNumber: number;
+  pageSize: number;
+};
+
+// Type for the response from the getGoods list API
+export type GetGoodsResponse = {
+  list: t.TGoods[];
+  pageNumber: string | number;
+  pageSize: string | number;
+  pages: string | number;
+  count: string | number;
+};
+
+// Parameters for listing orders (e.g., for pagination)
+export type GetOrdersParams = {
+  searchKey: string;
+  pageNumber: number;
+  pageSize: number;
+};
+
+// Type for the response from the getOrders list API
+export type GetOrdersResponse = {
+  list: t.TOrder[];
+  pageNumber: string | number;
+  pageSize: string | number;
+  pages: string | number;
+  count: string | number;
+};

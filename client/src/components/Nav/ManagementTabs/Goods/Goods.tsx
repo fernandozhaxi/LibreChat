@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useGetUsersQuery } from '~/data-provider';
+import { useGetGoodsQuery } from '~/data-provider';
 import {
   Button,
   Input,
@@ -10,27 +10,26 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui';
-import EditBalance from './EditBalance';
-import CreatUser from './CreatUser';
-import DeleteButton from './DeleteButton';
 import { NewChatIcon } from '~/components/svg';
 import { formatDate } from '~/utils';
-import { TUser } from 'librechat-data-provider';
+import CreateGoods from './CreateGoods';
+import DeleteButton from './DeleteButton';
+import { TGoods } from 'librechat-data-provider';
 import useLocalize from '~/hooks/useLocalize';
-
+import { Switch } from '~/components/ui';
 export default function Account() {
   const localize = useLocalize();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentUser, setCurrentUser] = useState<TUser | undefined>(undefined);
+  const [currentGoods, setCurrentGoods] = useState<TGoods | undefined>(undefined);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showBalanceDialog, setShowBalanceDialog] = useState(false);
-  const [showCreatUserDialog, setShowCreatUserDialog] = useState(false);
+  const [showCreatGoodsDialog, setShowCreatGoodsDialog] = useState(false);
+
   const [searchKey, setSearchKey] = useState('');
   const pageSize = 10; // 每页的用户数
 
-  const { data: { list: users = [], pages = 0, count: totalUsers = 0 } = {}, refetch } =
-    useGetUsersQuery({
+  const { data: { list: goods = [], pages = 0, count: totalGoods = 0 } = {}, refetch } =
+    useGetGoodsQuery({
       pageNumber: currentPage,
       pageSize: pageSize,
       searchKey: searchKey,
@@ -56,19 +55,22 @@ export default function Account() {
     }
   };
 
-  const haldlePreDeleteUser = (user) => {
-    setCurrentUser(user);
+  const haldlePreDisabledUser = (goods) => {
+    setCurrentGoods(goods);
+  };
+
+  const handleCheckedChange = (goods, v) => {
+    console.log(goods, v);
+  };
+
+  const handlePreCreatGoods = (goods?: TGoods) => {
+    setCurrentGoods(goods);
+    setShowCreatGoodsDialog(true);
+  };
+
+  const haldlePreDeleteGoods = (goods?: TGoods) => {
+    setCurrentGoods(goods);
     setShowDeleteDialog(true);
-  };
-
-  const handlePreEditBalance = (user) => {
-    setCurrentUser(user);
-    setShowBalanceDialog(true);
-  };
-
-  const handlePreCreatUser = (user?: TUser) => {
-    setCurrentUser(user);
-    setShowCreatUserDialog(true);
   };
 
   const handleRefreshList = () => {
@@ -79,7 +81,7 @@ export default function Account() {
     <>
       <div className="flex items-center">
         <Input
-          placeholder="请输入用户名或邮箱筛选"
+          placeholder="请输入商品名称"
           value={(searchKey as string | undefined) ?? ''}
           onChange={handleSearchKeyChange}
           className="mb-5 mr-5 mt-5 max-w-sm border-border-medium placeholder:text-text-secondary"
@@ -88,9 +90,9 @@ export default function Account() {
         <Button
           className="ml-4 transform select-none border-border-medium"
           variant="outline"
-          onClick={() => handlePreCreatUser()}
+          onClick={() => handlePreCreatGoods()}
         >
-          + 创建新用户
+          + 创建商品
         </Button>
       </div>
       <div className="relative max-h-[25rem] min-h-[630px] overflow-y-auto rounded-md border border-black/10 pb-4 dark:border-white/10">
@@ -98,22 +100,25 @@ export default function Account() {
           <TableHeader>
             <TableRow>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                姓名
+                商品名称
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                用户名
+                市场价格
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                邮箱
+                售价
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                Balance
+                类型
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                角色
+                点数
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                创建时间
+                会员级别
+              </TableHead>
+              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
+                状态
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 操作
@@ -121,8 +126,8 @@ export default function Account() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length ? (
-              users.map((row) => (
+            {goods.length ? (
+              goods.map((row) => (
                 <TableRow
                   key={row.id}
                   className="border-b border-black/10 text-left text-gray-600 dark:border-white/10 dark:text-gray-300 [tr:last-child_&]:border-b-0"
@@ -131,33 +136,41 @@ export default function Account() {
                     {row.name}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.username}
+                    {row.marketPrice}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.email}
-                  </TableCell>
-
-                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    <button
-                      className="text-token-text-primary flex"
-                      onClick={() => handlePreEditBalance(row)}
-                      title="点击编辑balance"
-                    >
-                      <div className="min-w-[100px] text-left"> {row.tokenCredits}</div>
-                      <NewChatIcon className="size-5" />
-                    </button>
+                    {row.price}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.role === 'ADMIN' ? '管理员' : '普通用户'}
+                    {row.type}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {formatDate(row.createdAt)}
+                    {row.points}
                   </TableCell>
-
+                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
+                    {row.level}
+                  </TableCell>
+                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
+                    {row.status === 1 ? '启用' : '禁用'}
+                    <Switch
+                      checked={row.status === 1}
+                      onCheckedChange={(v) => {
+                        handleCheckedChange(row, v);
+                      }}
+                      className="ml-4 mt-2 ring-ring-primary"
+                      data-testid="enableUserMsgMarkdown"
+                    />
+                  </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     <Button
-                      onClick={() => haldlePreDeleteUser(row)}
-                      className="bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
+                      onClick={() => haldlePreDisabledUser(row)}
+                      className="bg-blue-700 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
+                    >
+                      编辑
+                    </Button>
+                    <Button
+                      onClick={() => haldlePreDeleteGoods(row)}
+                      className="bg-red-700 ml-4 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
                     >
                       删除
                     </Button>
@@ -175,7 +188,7 @@ export default function Account() {
         </Table>
       </div>
       <div className="ml-4 mr-4 mt-4 flex h-auto items-center justify-end space-x-2 py-4 sm:ml-0 sm:mr-0 sm:h-0">
-        <div className="text-muted-foreground ml-2 flex-1 text-sm">{`共${totalUsers}个用户`}</div>
+        <div className="text-muted-foreground ml-2 flex-1 text-sm">{`共${totalGoods}个商品`}</div>
         <Button
           className="select-none border-border-medium"
           variant="outline"
@@ -196,26 +209,18 @@ export default function Account() {
         </Button>
       </div>
 
+      {showCreatGoodsDialog && (
+        <CreateGoods
+          showDialog={showCreatGoodsDialog}
+          setShowDialog={setShowCreatGoodsDialog}
+          onConfirm={handleRefreshList}
+        />
+      )}
       {showDeleteDialog && (
         <DeleteButton
-          user={currentUser}
+          goods={currentGoods}
           showDialog={showDeleteDialog}
           setShowDialog={setShowDeleteDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showBalanceDialog && (
-        <EditBalance
-          user={currentUser}
-          showDialog={showBalanceDialog}
-          setShowDialog={setShowBalanceDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showCreatUserDialog && (
-        <CreatUser
-          showDialog={showCreatUserDialog}
-          setShowDialog={setShowCreatUserDialog}
           onConfirm={handleRefreshList}
         />
       )}

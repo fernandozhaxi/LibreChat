@@ -21,8 +21,16 @@ const goodsSchema = mongoose.Schema(
     desc: { // 商品描述
       type: String,
     },
-    count: { // 数量，vip表示月份，point表示积分数量
+    points: { // 数量，point 类型需要有积分数量
       type: Number,
+    },
+    level: { // 等级，1,2,3,4,5 vip需要有等级
+      type: Number,
+      required: true,
+    },
+    status: { // 状态，1启用 2禁用
+      type: Number,
+      required: true,
     },
   },
   {
