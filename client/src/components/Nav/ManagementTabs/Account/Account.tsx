@@ -12,6 +12,7 @@ import {
 } from '~/components/ui';
 import EditBalance from './EditBalance';
 import CreatUser from './CreatUser';
+import EditVip from './EditVip';
 import DeleteButton from './DeleteButton';
 import { NewChatIcon } from '~/components/svg';
 import { formatDate } from '~/utils';
@@ -26,6 +27,7 @@ export default function Account() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showBalanceDialog, setShowBalanceDialog] = useState(false);
   const [showCreatUserDialog, setShowCreatUserDialog] = useState(false);
+  const [showEditVipDialog, setShowEditVipDialog] = useState(false);
   const [searchKey, setSearchKey] = useState('');
   const pageSize = 10; // 每页的用户数
 
@@ -71,6 +73,11 @@ export default function Account() {
     setShowCreatUserDialog(true);
   };
 
+  const haldlePreEditVip = (user?: TUser) => {
+    setCurrentUser(user);
+    setShowEditVipDialog(true);
+  };
+
   const handleRefreshList = () => {
     refetch();
   };
@@ -107,12 +114,14 @@ export default function Account() {
                 邮箱
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                Balance
-              </TableHead>
-              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 角色
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
+                点数
+              </TableHead>
+              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
+                会员
+              </TableHead> <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 创建时间
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
@@ -138,6 +147,9 @@ export default function Account() {
                   </TableCell>
 
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
+                    {row.role === 'ADMIN' ? '管理员' : '普通用户'}
+                  </TableCell>
+                  <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     <button
                       className="text-token-text-primary flex"
                       onClick={() => handlePreEditBalance(row)}
@@ -148,7 +160,7 @@ export default function Account() {
                     </button>
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.role === 'ADMIN' ? '管理员' : '普通用户'}
+                    {row.vip?.name}
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     {formatDate(row.createdAt)}
@@ -161,6 +173,18 @@ export default function Account() {
                     >
                       删除
                     </Button>
+                    {row.vip?.name ? <Button
+                      onClick={() => haldlePreEditVip(row)}
+                      className="bg-blue-700 text-white hover:bg-blue-800 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-800"
+                    >
+                      编辑会员
+                    </Button> :
+                      <Button
+                        onClick={() => haldlePreEditVip(row)}
+                        className="ml-5 bg-blue-700 text-white hover:bg-blue-800 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-800"
+                      >
+                        开通会员
+                      </Button>}
                   </TableCell>
                 </TableRow>
               ))
@@ -216,6 +240,13 @@ export default function Account() {
         <CreatUser
           showDialog={showCreatUserDialog}
           setShowDialog={setShowCreatUserDialog}
+          onConfirm={handleRefreshList}
+        />
+      )}
+      {showEditVipDialog && (
+        <EditVip
+          showDialog={showEditVipDialog}
+          setShowDialog={setShowEditVipDialog}
           onConfirm={handleRefreshList}
         />
       )}

@@ -57,10 +57,6 @@ export default function Account() {
     }
   };
 
-  const haldlePreDisabledUser = (goods) => {
-    setCurrentGoods(goods);
-  };
-
   const handleSwitchStatus = (goods) => {
     setCurrentGoods(goods);
     setShowSwitchDialog(true);
@@ -166,14 +162,8 @@ export default function Account() {
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     <Button
-                      onClick={() => haldlePreDisabledUser(row)}
-                      className="bg-blue-700 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
-                    >
-                      编辑
-                    </Button>
-                    <Button
                       onClick={() => haldlePreDeleteGoods(row)}
-                      className="bg-red-700 ml-4 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
+                      className="bg-red-700 text-white hover:bg-red-800 dark:bg-red-600 dark:text-white dark:hover:bg-red-800"
                     >
                       删除
                     </Button>

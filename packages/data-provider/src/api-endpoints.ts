@@ -12,6 +12,7 @@ export const deleteUser = () => '/api/user/delete';
 export const deleteUserByEmail = () => '/api/user/deleteByEmail';
 
 export const updateBalance = () => '/api/balance/update';
+export const updateVip = () => '/api/vip/update';
 
 export const getUsers = (pageNumber: number, pageSize: number, searchKey: string) =>
   `/api/user/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;

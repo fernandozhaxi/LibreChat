@@ -1391,3 +1391,15 @@ export const useUpdateGoodsMutation = (
     },
   });
 };
+
+export const useUpdateVipMutation = (
+  options?: t.MutationOptions<boolean, t.TUpdateVip>,
+): UseMutationResult<boolean, unknown, t.TUpdateVip, unknown> => {
+  return useMutation([MutationKeys.updateVip], {
+    mutationFn: (payload: t.TUpdateVip) => dataService.updateVip(payload),
+    ...(options || {}),
+    onSuccess: (...args) => {
+      options?.onSuccess?.(...args);
+    },
+  });
+};

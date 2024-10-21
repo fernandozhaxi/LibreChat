@@ -114,9 +114,13 @@ export type TUser = {
   createdAt: string;
   updatedAt: string;
   tokenCredits?: number;
-  vipLevel?: number;
-  vipStartTime?: number;
-  vipEndTime?: number;
+  vip?: {
+    goodsId: string,
+    userId: string,
+    goodsName: string,
+    startTime: number,
+    endTime: number,
+  }
 };
 
 export type TGoods = {
@@ -585,6 +589,13 @@ export type TCustomConfigSpeechResponse = { [key: string]: string };
 export type TUpdateBalance = {
   id: string;
   balance: number;
+};
+
+export type TUpdateVip = {
+  userId: string,
+  goodsId: string;
+  startTime: number,
+  endTime: number,
 };
 
 export type TUserTermsResponse = {

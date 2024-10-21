@@ -72,4 +72,5 @@ export enum MutationKeys {
   switchGoodsStatus = 'switchGoodsStatus',
   deleteGoodsById = 'deleteGoodsById',
   updateGoods = 'updateGoods',
+  updateVip = 'updateVip',
 }

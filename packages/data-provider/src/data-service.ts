@@ -43,6 +43,15 @@ export function updateBalance(payload: t.TUpdateBalance): Promise<boolean> {
   });
 }
 
+export function updateVip(payload: t.TUpdateVip): Promise<boolean> {
+  return request.post(endpoints.updateVip(), {
+    userId: payload.userId,
+    goodsId: payload.goodsId,
+    startTime: payload.startTime,
+    endTime: payload.endTime,
+  });
+}
+
 export const getUsers = (params: q.GetUsersParams): Promise<q.GetUsersResponse> => {
   const pageNumber = params.pageNumber;
   const pageSize = params.pageSize;

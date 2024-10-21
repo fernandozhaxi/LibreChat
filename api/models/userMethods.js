@@ -208,6 +208,20 @@ const getUsersByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
         },
       },
       {
+        $lookup: {
+          from: 'vips', // 连接 vip 表
+          localField: 'vipId',
+          foreignField: '_id',
+          as: 'vipInfo',
+        },
+      },
+      {
+        $unwind: {
+          path: '$vipInfo',
+          preserveNullAndEmptyArrays: true, // 如果用户没有 vip 信息，仍然返回用户
+        },
+      },
+      {
         $project: {
           id: '$_id',
           name: 1,
@@ -217,6 +231,12 @@ const getUsersByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
           provider: 1,
           createdAt: 1,
           tokenCredits: { $ifNull: ['$users.tokenCredits', 0] },
+          vip: { // 将 vip 信息添加到结果中
+            id: '$vipInfo.goodsId',
+            name: '$vipInfo.goodsName',
+            start: '$vipInfo.startTime',
+            end: '$vipInfo.endTime',
+          },
         },
       },
       {
