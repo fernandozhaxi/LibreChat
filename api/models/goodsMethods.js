@@ -101,13 +101,17 @@ const deleteGoodsById = async function (goodsId) {
  * @param {string} userId - The ID of the goods to delete.
  * @returns {Promise<{ deletedCount: number }>} An object indicating the number of deleted documents.
  */
-const switchStatus = async function (goodsId, status) {
+const switchGoodsStatus = async function (goodsId, status) {
   try {
-    const result = await Goods.deleteOne({ _id: userId });
-    if (result.deletedCount === 0) {
-      return { deletedCount: 0, message: 'No user found with that ID.' };
-    }
-    return { deletedCount: result.deletedCount, message: 'Goods was deleted successfully.' };
+    await Goods.updateOne({
+      _id: goodsId,
+    }, {
+      $set: {
+        status: status,
+      },
+    }, { upsert: true });
+
+    return { message: 'Switch goods status successfully.' };
   } catch (error) {
     throw new Error('Error deleting user: ' + error.message);
   }
@@ -171,5 +175,5 @@ module.exports = {
   updateGoods,
   findGoods,
   getGoodsByPage,
-  switchStatus,
+  switchGoodsStatus,
 };

@@ -19,7 +19,6 @@ async function getBalanceByEmailController(req, res) {
 
 async function balanceUpdateController(req, res) {
   const { id, balance } = req.body;
-  console.log('update balance', req.body);
   try {
     await Balance.updateOne({
       'user': id,

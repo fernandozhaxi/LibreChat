@@ -14,6 +14,7 @@ import { NewChatIcon } from '~/components/svg';
 import { formatDate } from '~/utils';
 import CreateGoods from './CreateGoods';
 import DeleteButton from './DeleteButton';
+import SwitchStatus from './SwitchStatus';
 import { TGoods } from 'librechat-data-provider';
 import useLocalize from '~/hooks/useLocalize';
 import { Switch } from '~/components/ui';
@@ -23,6 +24,7 @@ export default function Account() {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentGoods, setCurrentGoods] = useState<TGoods | undefined>(undefined);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [showCreatGoodsDialog, setShowCreatGoodsDialog] = useState(false);
 
   const [searchKey, setSearchKey] = useState('');
@@ -59,8 +61,9 @@ export default function Account() {
     setCurrentGoods(goods);
   };
 
-  const handleCheckedChange = (goods, v) => {
-    console.log(goods, v);
+  const handleSwitchStatus = (goods) => {
+    setCurrentGoods(goods);
+    setShowSwitchDialog(true);
   };
 
   const handlePreCreatGoods = (goods?: TGoods) => {
@@ -155,7 +158,7 @@ export default function Account() {
                     <Switch
                       checked={row.status === 1}
                       onCheckedChange={(v) => {
-                        handleCheckedChange(row, v);
+                        handleSwitchStatus(row);
                       }}
                       className="ml-4 mt-2 ring-ring-primary"
                       data-testid="enableUserMsgMarkdown"
@@ -221,6 +224,14 @@ export default function Account() {
           goods={currentGoods}
           showDialog={showDeleteDialog}
           setShowDialog={setShowDeleteDialog}
+          onConfirm={handleRefreshList}
+        />
+      )}
+      {showSwitchDialog && (
+        <SwitchStatus
+          goods={currentGoods}
+          showDialog={showSwitchDialog}
+          setShowDialog={setShowSwitchDialog}
           onConfirm={handleRefreshList}
         />
       )}

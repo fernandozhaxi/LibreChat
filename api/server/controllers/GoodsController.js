@@ -3,7 +3,7 @@ const {
   getGoodsByPage,
   createGoods,
   deleteGoodsById,
-  switchStatus,
+  switchGoodsStatus,
 } = require('~/models');
 
 const { logger } = require('~/config');
@@ -75,9 +75,9 @@ const switchStatusController = async (req, res) => {
 
   const { id, status } = req.body;
   try {
-    await switchStatus(id, status);
-    logger.info(`Goods deleted account. Id: ${id}`);
-    res.status(200).send({ message: 'Goods deleted' });
+    await switchGoodsStatus(id, status);
+    logger.info(`Switch goods status. Id: ${id}`);
+    res.status(200).send({ message: 'Switch success' });
   } catch (err) {
     logger.error('[deleteGoodsController]', err);
     return res.status(500).json({ message: 'Something went wrong.' });
