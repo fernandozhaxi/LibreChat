@@ -18,6 +18,7 @@ import SwitchStatus from './SwitchStatus';
 import { TGoods } from 'librechat-data-provider';
 import useLocalize from '~/hooks/useLocalize';
 import { Switch } from '~/components/ui';
+
 export default function Account() {
   const localize = useLocalize();
 
@@ -26,7 +27,7 @@ export default function Account() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [showCreatGoodsDialog, setShowCreatGoodsDialog] = useState(false);
-
+  const [currentType, setCurrentType] = useState<string>('vip');
   const [searchKey, setSearchKey] = useState('');
   const pageSize = 10; // 每页的用户数
 
@@ -35,6 +36,7 @@ export default function Account() {
       pageNumber: currentPage,
       pageSize: pageSize,
       searchKey: searchKey,
+      type: currentType,
     });
 
   useEffect(() => {

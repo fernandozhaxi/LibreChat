@@ -12,7 +12,7 @@ export const deleteUser = () => '/api/user/delete';
 export const deleteUserByEmail = () => '/api/user/deleteByEmail';
 
 export const updateBalance = () => '/api/balance/update';
-export const updateVip = () => '/api/vip/update';
+export const openVip = () => '/api/vip/open';
 
 export const getUsers = (pageNumber: number, pageSize: number, searchKey: string) =>
   `/api/user/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;
@@ -20,8 +20,8 @@ export const getUsers = (pageNumber: number, pageSize: number, searchKey: string
 export const createGoods = () =>
   '/api/goods/create';
 
-export const getGoods = (pageNumber: number, pageSize: number, searchKey: string) =>
-  `/api/goods/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}`;
+export const getGoods = (pageNumber: number, pageSize: number, searchKey: string, type: string) =>
+  `/api/goods/list?pageNumber=${pageNumber}&pageSize=${pageSize}&searchKey=${searchKey}&type=${type}`;
 
 export const deleteGoods = () =>
   '/api/goods/delete';

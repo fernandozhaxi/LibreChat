@@ -46,6 +46,10 @@ const {
   getOrdersByPage,
 } = require('./orderMethods');
 
+const {
+  openVip,
+} = require('./vipMethods');
+
 const { getConvoTitle, getConvo, saveConvo, deleteConvos } = require('./Conversation');
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
 const { createToken, findToken, updateToken, deleteTokens } = require('./Token');
@@ -111,6 +115,8 @@ module.exports = {
   createOrder,
   findOrder,
   getOrdersByPage,
+
+  openVip,
 
   User,
   Key,

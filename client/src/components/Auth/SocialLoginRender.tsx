@@ -4,6 +4,8 @@ import SocialButton from './SocialButton';
 import WechatButton from './WechatButton';
 
 import { useLocalize } from '~/hooks';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router';
 
 import { TStartupConfig } from 'librechat-data-provider';
 
@@ -14,11 +16,13 @@ function SocialLoginRender({
 }) {
   const localize = useLocalize();
 
-  console.log(startupConfig);
-
   if (!startupConfig) {
     return null;
   }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { pathname } = useLocation();
+  console.log(pathname);
 
   const providerComponents = {
     discord: startupConfig.discordLoginEnabled && (
@@ -82,7 +86,7 @@ function SocialLoginRender({
         id="openid"
       />
     ),
-    wechat: startupConfig.wechatEnabled && (
+    wechat: startupConfig.wechatEnabled && pathname === '/login' && (
       <WechatButton
         key="wechat"
         serverDomain={startupConfig.serverDomain}

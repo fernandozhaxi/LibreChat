@@ -28,6 +28,7 @@ const banner = require('./banner');
 const pay = require('./pay');
 const goods = require('./goods');
 const order = require('./order');
+const vip = require('./vip');
 
 module.exports = {
   ask,
@@ -60,4 +61,5 @@ module.exports = {
   pay,
   goods,
   order,
+  vip,
 };

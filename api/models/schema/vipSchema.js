@@ -11,24 +11,16 @@ const vipSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  goodsLevel: {
-    type: String,
-    required: true,
-  },
-  goodsType: {
-    type: String,
-    required: true,
-  },
   goodsName: {
     type: String,
     required: true,
   },
-  vipStartTime: {
+  goodsLevel: {
     type: String,
     required: true,
   },
-  vipEndTime: {
-    type: String,
+  expiredTime: {
+    type: Date,
     required: true,
   },
 });

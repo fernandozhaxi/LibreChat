@@ -115,11 +115,12 @@ export type TUser = {
   updatedAt: string;
   tokenCredits?: number;
   vip?: {
-    goodsId: string,
     userId: string,
+    goodsId: string,
     goodsName: string,
-    startTime: number,
-    endTime: number,
+    goodsLevel: number,
+    expiredTime: Date,
+    id: string,
   }
 };
 
@@ -591,11 +592,13 @@ export type TUpdateBalance = {
   balance: number;
 };
 
-export type TUpdateVip = {
+export type TOpenVip = {
+  id?: string,
   userId: string,
   goodsId: string;
-  startTime: number,
-  endTime: number,
+  goodsName: string;
+  goodsLevel: number;
+  expiredTime: Date,
 };
 
 export type TUserTermsResponse = {
@@ -610,6 +613,12 @@ export type TBannerResponse = TBanner | null;
 
 export type TUpdateGoods = {
   id: string;
+  name: string,
+  type: string,
+  marketPrice: string,
+  price: number,
+  level: number,
+  points: number,
 };
 
 export type TSwitchGoodsStatus = {

@@ -122,15 +122,20 @@ const switchGoodsStatus = async function (goodsId, status) {
  *
  * @param {string} pageNumber
  * @param {string} pageSize
+ * @param {string} searchKey
+ * @param {string} type
  * @returns {Promise<MongoUser[]>} .
  */
-const getGoodsByPage = async function (pageNumber = 1, pageSize = 25, searchKey = '') {
+const getGoodsByPage = async function (pageNumber = 1, pageSize = 25, searchKey = '', type = '') {
   try {
     const filter = {
       $or: [
         { name: { $regex: searchKey, $options: 'i' } },
       ],
     };
+    if (type) {
+      filter.type = type;
+    }
 
     const total = await Goods.countDocuments(filter);
 

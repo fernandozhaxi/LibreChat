@@ -190,9 +190,7 @@ const getUsersByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
     const totalPages = Math.ceil(totalUser / pageSize);
 
     const users = await User.aggregate([
-      {
-        $match: filter,
-      },
+      { $match: filter },
       {
         $lookup: {
           from: 'balances',
@@ -201,26 +199,16 @@ const getUsersByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
           as: 'users',
         },
       },
-      {
-        $unwind: {
-          path: '$users',
-          preserveNullAndEmptyArrays: true, // 如果用户没有 balance 信息，仍然返回用户
-        },
-      },
+      { $unwind: { path: '$users', preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
-          from: 'vips', // 连接 vip 表
-          localField: 'vipId',
-          foreignField: '_id',
+          from: 'vips',
+          localField: '_id',
+          foreignField: 'user',
           as: 'vipInfo',
         },
       },
-      {
-        $unwind: {
-          path: '$vipInfo',
-          preserveNullAndEmptyArrays: true, // 如果用户没有 vip 信息，仍然返回用户
-        },
-      },
+      { $unwind: { path: '$vipInfo', preserveNullAndEmptyArrays: true } },
       {
         $project: {
           id: '$_id',
@@ -231,20 +219,17 @@ const getUsersByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
           provider: 1,
           createdAt: 1,
           tokenCredits: { $ifNull: ['$users.tokenCredits', 0] },
-          vip: { // 将 vip 信息添加到结果中
-            id: '$vipInfo.goodsId',
-            name: '$vipInfo.goodsName',
-            start: '$vipInfo.startTime',
-            end: '$vipInfo.endTime',
+          vip: {
+            id: '$vipInfo._id', // 更正字段名，确保使用vipInfo的_id字段
+            goodsName: '$vipInfo.goodsName',
+            goodsId: '$vipInfo.goodsId',
+            goodsLevel: '$vipInfo.goodsLevel',
+            expiredTime: '$vipInfo.expiredTime',
           },
         },
       },
-      {
-        $skip: (pageNumber - 1) * pageSize,
-      },
-      {
-        $limit: pageSize,
-      },
+      { $skip: (pageNumber - 1) * pageSize },
+      { $limit: pageSize },
     ]);
 
     return { list: users, pages: totalPages, pageNumber, pageSize, count: totalUser };

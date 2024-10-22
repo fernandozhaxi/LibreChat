@@ -1392,11 +1392,11 @@ export const useUpdateGoodsMutation = (
   });
 };
 
-export const useUpdateVipMutation = (
-  options?: t.MutationOptions<boolean, t.TUpdateVip>,
-): UseMutationResult<boolean, unknown, t.TUpdateVip, unknown> => {
+export const useOpenVipMutation = (
+  options?: t.MutationOptions<boolean, t.TOpenVip>,
+): UseMutationResult<boolean, unknown, t.TOpenVip, unknown> => {
   return useMutation([MutationKeys.updateVip], {
-    mutationFn: (payload: t.TUpdateVip) => dataService.updateVip(payload),
+    mutationFn: (payload: t.TOpenVip) => dataService.openVip(payload),
     ...(options || {}),
     onSuccess: (...args) => {
       options?.onSuccess?.(...args);

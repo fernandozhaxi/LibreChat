@@ -127,15 +127,6 @@ const userSchema = mongoose.Schema(
       type: Date,
       expires: 604800, // 7 days in seconds
     },
-    vipLevel: {
-      type: Number,
-    },
-    vipStartTime: {
-      type: Number,
-    },
-    vipEndTime: {
-      type: Number,
-    },
     termsAccepted: {
       type: Boolean,
       default: false,

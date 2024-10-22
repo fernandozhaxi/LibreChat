@@ -14,7 +14,6 @@ const { logger } = require('~/config');
  * @param {*} res
  */
 const getGoodsListController = async (req, res) => {
-  console.log('商品列表', req.query);
   let pageNumber = req.query.pageNumber || 1;
   pageNumber = parseInt(pageNumber, 10);
 
@@ -30,8 +29,9 @@ const getGoodsListController = async (req, res) => {
   }
 
   let searchKey = req.query.searchKey;
+  let type = req.query.type;
 
-  res.status(200).send(await getGoodsByPage(pageNumber, pageSize, searchKey));
+  res.status(200).send(await getGoodsByPage(pageNumber, pageSize, searchKey, type));
 };
 
 /**

@@ -43,13 +43,8 @@ export function updateBalance(payload: t.TUpdateBalance): Promise<boolean> {
   });
 }
 
-export function updateVip(payload: t.TUpdateVip): Promise<boolean> {
-  return request.post(endpoints.updateVip(), {
-    userId: payload.userId,
-    goodsId: payload.goodsId,
-    startTime: payload.startTime,
-    endTime: payload.endTime,
-  });
+export function openVip(payload: t.TOpenVip): Promise<boolean> {
+  return request.post(endpoints.openVip(), payload);
 }
 
 export const getUsers = (params: q.GetUsersParams): Promise<q.GetUsersResponse> => {
@@ -67,14 +62,15 @@ export const getGoods = (params: q.GetGoodsParams): Promise<q.GetGoodsResponse> 
   const pageNumber = params.pageNumber;
   const pageSize = params.pageSize;
   const searchKey = params.searchKey;
-  return request.get(endpoints.getGoods(pageNumber, pageSize, searchKey));
+  const type = params.type;
+  return request.get(endpoints.getGoods(pageNumber, pageSize, searchKey, type));
 };
 
 export const deleteGoods = (id: string): Promise<boolean> => {
   return request.post(endpoints.deleteGoods(), { id });
 };
 
-export const updateGoods = (params: t.TCreateGoods): Promise<boolean> => {
+export const updateGoods = (params: t.TUpdateGoods): Promise<boolean> => {
   return request.post(endpoints.updateGoods(), params);
 };
 

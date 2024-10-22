@@ -94,6 +94,7 @@ export type GetGoodsParams = {
   searchKey: string;
   pageNumber: number;
   pageSize: number;
+  type: string;
 };
 
 // Type for the response from the getGoods list API

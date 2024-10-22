@@ -121,7 +121,8 @@ export default function Account() {
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 会员
-              </TableHead> <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
+              </TableHead>
+              <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 创建时间
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
@@ -160,7 +161,16 @@ export default function Account() {
                     </button>
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
-                    {row.vip?.name}
+                    {
+                      row.vip?.goodsName && <button
+                        className="text-token-text-primary flex"
+                        onClick={() => haldlePreEditVip(row)}
+                        title="点击编辑会员信息"
+                      >
+                        <div className="min-w-[100px] text-left"> {row.vip?.goodsName}</div>
+                        <NewChatIcon className="size-5" />
+                      </button>
+                    }
                   </TableCell>
                   <TableCell className="align-start overflow-x-auto px-2 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm [tr[data-disabled=true]_&]:opacity-50">
                     {formatDate(row.createdAt)}
@@ -173,12 +183,7 @@ export default function Account() {
                     >
                       删除
                     </Button>
-                    {row.vip?.name ? <Button
-                      onClick={() => haldlePreEditVip(row)}
-                      className="bg-blue-700 text-white hover:bg-blue-800 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-800"
-                    >
-                      编辑会员
-                    </Button> :
+                    {!row.vip?.goodsId &&
                       <Button
                         onClick={() => haldlePreEditVip(row)}
                         className="ml-5 bg-blue-700 text-white hover:bg-blue-800 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-800"
@@ -245,6 +250,7 @@ export default function Account() {
       )}
       {showEditVipDialog && (
         <EditVip
+          user={currentUser}
           showDialog={showEditVipDialog}
           setShowDialog={setShowEditVipDialog}
           onConfirm={handleRefreshList}
