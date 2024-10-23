@@ -114,7 +114,7 @@ export const getFileType = (
  * @example
  * formatDate('2020-01-01T00:00:00.000Z') // '1 Jan 2020'
  */
-export function formatDate(dateString: string) {
+export function formatDate(dateString: string | Date) {
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -126,6 +126,19 @@ export function formatDate(dateString: string) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+/**
+ * Format a date string to a human readable format
+ * @example
+ * formatDate('2020-01-01T00:00:00.000Z') // '1 Jan 2020'
+ */
+export function formatDateYear(dateString: string | Date) {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
 /**
  * Adds a file to the query cache
  */

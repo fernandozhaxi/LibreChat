@@ -24,7 +24,7 @@ export const TypeSelector = ({
   onChange: (value: string) => void;
 }) => {
   const options = [
-    { value: 'point', label: '点数' },
+    { value: 'point', label: '积分' },
     { value: 'vip', label: '会员' },
   ];
 
@@ -183,11 +183,11 @@ export default function CreateGoods({
                 {selectedType === 'vip' && (
                   <VIPTypeSelector selectedVIPType={selectedVIPType} onChange={setSelectedVIPType} />
                 )}
-                {selectedType === 'point' && renderInput('points', '点数', 'number', {
-                  required: '点数必填',
+                {selectedType === 'point' && renderInput('points', '积分', 'number', {
+                  required: '积分必填',
                   min: {
                     value: 0,
-                    message: '点数不能为负值',
+                    message: '积分不能为负值',
                   },
                 })}
                 <div className="mt-6">

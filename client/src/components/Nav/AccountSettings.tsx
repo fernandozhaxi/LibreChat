@@ -10,9 +10,11 @@ import useAvatar from '~/hooks/Messages/useAvatar';
 import { UserIcon } from '~/components/svg';
 import { useLocalize } from '~/hooks';
 import Management from './Management';
+import ChargeDialog from './ChargeDialog';
 import Settings from './Settings';
 import store from '~/store';
 import { SystemRoles } from 'librechat-data-provider';
+import { formatDateYear } from '~/utils';
 
 function AccountSettings() {
   const localize = useLocalize();
@@ -23,10 +25,17 @@ function AccountSettings() {
   });
   const [showManagement, setShowManagement] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showCharge, setshowCharge] = useState(false);
+  const [chargeType, setChargeType] = useState('');
   const [showFiles, setShowFiles] = useRecoilState(store.showFiles);
 
   const avatarSrc = useAvatar(user);
   const name = user?.avatar ?? user?.username ?? '';
+
+  const handleCharge = (type) => {
+    setChargeType(type);
+    setshowCharge(true);
+  };
 
   return (
     <Select.SelectProvider>
@@ -74,28 +83,63 @@ function AccountSettings() {
           translate: '0px',
         }}
       >
-        <div className="text-token-text-secondary ml-3 mr-2 py-2 text-sm" role="note">
+        <div className="text-token-text-secondary py-2 text-sm" role="note">
           {user?.email ?? localize('com_nav_user')}
         </div>
         <DropdownMenuSeparator />
         <div className="flex items-center justify-between">
-          {/* 如果有会员且没有过期，只显示会员，没有会员只显示点数 */}
-          {
-            // user?.vip.name
-          }
-          <div>
-            {startupConfig?.checkBalance === true &&
-              balanceQuery.data != null &&
-              !isNaN(parseInt(balanceQuery.data)) && (
-                <>
-                  <div className="text-token-text-secondary ml-3 mr-2 py-2 text-sm" role="note">
-                    {`点数: ${parseInt(balanceQuery.data)}`}
-                  </div>
-                </>
-              )}
-          </div>
+          {startupConfig?.checkBalance === true &&
+            balanceQuery.data != null &&
+            !isNaN(parseInt(balanceQuery.data)) && (
+              <div className="text-token-text-secondary ml-3  py-2 text-sm" role="note">
+                {`积分余额: ${parseInt(balanceQuery.data)}`}
+                <button
+                  onClick={() => { handleCharge('point'); }}
+                  style={{
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '5px 10px',
+                    cursor: 'pointer',
+                    marginLeft: '10px',
+                  }}
+                >
+                  充值
+                </button>
+              </div>
+            )}
         </div>
 
+        <div className="text-token-text-secondary py-2 text-sm" role="note">
+          {user?.vip && (
+            <div className='ml-3'>
+              <span>{user.vip.goodsName}</span>
+              {new Date(user.vip.expiredTime) < new Date() ? <span><span className="ml-1" style={{ color: 'red', fontSize: '11px' }}>(已过期)</span><span className='ml-2' style={{ color: 'blue', cursor: 'pointer' }} onClick={() => { handleCharge('vip'); }}>续费</span></span> : <span className='ml-2'>{formatDateYear(user.vip.expiredTime)}</span>}
+            </div>
+          )}
+
+          {!user?.vip && (
+            <div className="flex justify-between items-center p-2" style={{ background: 'linear-gradient(to left, orange, white)', fontSize: '13px' }}>
+              <div>
+                <div style={{ flex: '1', textAlign: 'left', fontSize: '16px' }}>VIP会员</div>  <div>高速通道 无限对话</div>
+              </div>
+              <button
+                onClick={() => { handleCharge('vip'); }}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '5px 10px',
+                  cursor: 'pointer',
+                }}
+              >
+                立即开通
+              </button>
+            </div>
+          )}
+        </div>
         <DropdownMenuSeparator />
         <Select.SelectItem
           value=""
@@ -150,6 +194,7 @@ function AccountSettings() {
       </Select.SelectPopover>
       {showFiles && <FilesView open={showFiles} onOpenChange={setShowFiles} />}
       {showSettings && <Settings open={showSettings} onOpenChange={setShowSettings} />}
+      {showCharge && <ChargeDialog type={chargeType} open={showCharge} onOpenChange={setshowCharge} />}
       {showManagement && <Management open={showManagement} onOpenChange={setShowManagement} />}
     </Select.SelectProvider>
   );

@@ -117,7 +117,7 @@ export default function Account() {
                 角色
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
-                点数
+                积分
               </TableHead>
               <TableHead className="align-start sticky top-0 rounded-t border-b border-black/10 bg-white px-2 py-1 text-left font-medium text-gray-700 dark:border-white/10 dark:bg-gray-700 dark:text-gray-100 sm:px-4 sm:py-2">
                 会员
@@ -167,7 +167,7 @@ export default function Account() {
                         onClick={() => haldlePreEditVip(row)}
                         title="点击编辑会员信息"
                       >
-                        <div className="min-w-[100px] text-left"> {row.vip?.goodsName}</div>
+                        <div className="min-w-[100px] text-left"> {row.vip?.goodsName}{new Date(row.vip?.expiredTime) < new Date() && <span style={{ fontSize: '11px', color: 'red' }}>(已过期)</span>}</div>
                         <NewChatIcon className="size-5" />
                       </button>
                     }
@@ -202,7 +202,7 @@ export default function Account() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </div >
       <div className="ml-4 mr-4 mt-4 flex h-auto items-center justify-end space-x-2 py-4 sm:ml-0 sm:mr-0 sm:h-0">
         <div className="text-muted-foreground ml-2 flex-1 text-sm">{`共${totalUsers}个用户`}</div>
         <Button
@@ -225,37 +225,45 @@ export default function Account() {
         </Button>
       </div>
 
-      {showDeleteDialog && (
-        <DeleteButton
-          user={currentUser}
-          showDialog={showDeleteDialog}
-          setShowDialog={setShowDeleteDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showBalanceDialog && (
-        <EditBalance
-          user={currentUser}
-          showDialog={showBalanceDialog}
-          setShowDialog={setShowBalanceDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showCreatUserDialog && (
-        <CreatUser
-          showDialog={showCreatUserDialog}
-          setShowDialog={setShowCreatUserDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
-      {showEditVipDialog && (
-        <EditVip
-          user={currentUser}
-          showDialog={showEditVipDialog}
-          setShowDialog={setShowEditVipDialog}
-          onConfirm={handleRefreshList}
-        />
-      )}
+      {
+        showDeleteDialog && (
+          <DeleteButton
+            user={currentUser}
+            showDialog={showDeleteDialog}
+            setShowDialog={setShowDeleteDialog}
+            onConfirm={handleRefreshList}
+          />
+        )
+      }
+      {
+        showBalanceDialog && (
+          <EditBalance
+            user={currentUser}
+            showDialog={showBalanceDialog}
+            setShowDialog={setShowBalanceDialog}
+            onConfirm={handleRefreshList}
+          />
+        )
+      }
+      {
+        showCreatUserDialog && (
+          <CreatUser
+            showDialog={showCreatUserDialog}
+            setShowDialog={setShowCreatUserDialog}
+            onConfirm={handleRefreshList}
+          />
+        )
+      }
+      {
+        showEditVipDialog && (
+          <EditVip
+            user={currentUser}
+            showDialog={showEditVipDialog}
+            setShowDialog={setShowEditVipDialog}
+            onConfirm={handleRefreshList}
+          />
+        )
+      }
     </>
   );
 }

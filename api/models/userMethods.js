@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const signPayload = require('~/server/services/signPayload');
 const User = require('./User');
+const Vip = require('./Vip');
 const { logger } = require('~/config');
 const Balance = require('~/models/Balance');
 
@@ -18,7 +19,24 @@ const getUserById = async function (userId, fieldsToSelect = null) {
     query.select(fieldsToSelect);
   }
 
-  return await query.lean();
+  let user = await query.lean();
+
+  if (user) {
+    // 查询与该用户对应的 VIP 信息
+    const vip = await Vip.findOne({ user: userId }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    user = {
+      ...user,
+      vip: vip ? {
+        id: vip._id,
+        goodsName: vip.goodsName,
+        goodsId: vip.goodsId,
+        goodsLevel: vip.goodsLevel,
+        expiredTime: vip.expiredTime,
+      } : null,
+    };
+  }
+
+  return user;
 };
 
 /**
@@ -32,8 +50,24 @@ const findUser = async function (searchCriteria, fieldsToSelect = null) {
   if (fieldsToSelect) {
     query.select(fieldsToSelect);
   }
+  let user = await query.lean();
 
-  return await query.lean();
+  if (user) {
+    // 查询与该用户对应的 VIP 信息
+    const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    user = {
+      ...user,
+      vip: vip ? {
+        id: vip._id,
+        goodsName: vip.goodsName,
+        goodsId: vip.goodsId,
+        goodsLevel: vip.goodsLevel,
+        expiredTime: vip.expiredTime,
+      } : null,
+    };
+  }
+
+  return user;
 };
 
 /**

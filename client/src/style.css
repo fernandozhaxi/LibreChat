@@ -2392,7 +2392,7 @@ button.scroll-convo {
 .popover-ui {
   z-index: 1000;
   display: flex;
-  max-height: min(var(--popover-available-height, 300px), 300px);
+  max-height: min(var(--popover-available-height, 380px), 380px);
   flex-direction: column;
   overflow: auto;
   overscroll-behavior: contain;
