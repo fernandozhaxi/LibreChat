@@ -66,13 +66,12 @@ const errorMessages = {
   message_limit: (json: TMessageLimit) => {
     const { max, windowInMinutes } = json;
     const plural = max > 1 ? 's' : '';
-    return `You hit the message limit. You have a cap of ${max} message${plural} per ${
-      windowInMinutes > 1 ? `${windowInMinutes} minutes` : 'minute'
-    }.`;
+    return `You hit the message limit. You have a cap of ${max} message${plural} per ${windowInMinutes > 1 ? `${windowInMinutes} minutes` : 'minute'
+      }.`;
   },
   token_balance: (json: TTokenBalance) => {
     const { balance, tokenCost, promptTokens, generations } = json;
-    const message = `余额不足! 剩余token额度: ${balance}. Prompt tokens: ${promptTokens}. Cost: ${tokenCost}. 请联系管理员充值`;
+    const message = `余额不足! 剩余积分: ${balance}. Prompt tokens: ${parseInt('' + promptTokens)}. Cost: ${parseInt('' + tokenCost)}. 请联系管理员充值积分或开通会员！`;
     return (
       <>
         {message}

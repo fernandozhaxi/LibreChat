@@ -16,8 +16,6 @@ const checkVip = function (req, model) {
     return false;
   }
 
-  console.log('是会员，放行！');
-
   return true;
 };
 
