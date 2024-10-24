@@ -156,8 +156,6 @@ const deleteUserController = async (req, res) => {
 
 const deleteUserByEmailController = async (req, res) => {
   const email = req.body.email;
-  console.log('当前用户', req.user);
-  console.log('删除用户', req.body);
   // 查找根据id查找用户
   const user = await findUser({ email });
   if (user) {
