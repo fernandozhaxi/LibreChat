@@ -1,15 +1,23 @@
 const { logger } = require('~/config');
+const Vip = require('~/models/Vip');
 const {
   openVip,
 } = require('~/models');
 /**
-//  * 根据条件获取订单列表
+//  * 获取用户的会员信息
 //  * @param {*} req
 //  * @param {*} res
 //  */
-// const getListController = async (req, res) => {
-
-// };
+const vipInfoController = async (req, res) => {
+  try {
+    const record = await Vip.findOne({ user: req.user.id },
+      { goodsName: 1, goodsId: 1, goodsLevel: 1, expiredTime: 1 }).lean();
+    res.status(200).json(record);
+  } catch (err) {
+    logger.error('[vipInfoController]', err);
+    return res.status(500).json({ message: err.message });
+  }
+};
 
 /**
  * 创建会员
@@ -27,7 +35,7 @@ const openVipController = async (req, res) => {
 };
 
 module.exports = {
-  // getListController,
+  vipInfoController,
   openVipController,
 };
 

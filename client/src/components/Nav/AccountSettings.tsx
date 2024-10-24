@@ -2,7 +2,7 @@ import { useRecoilState } from 'recoil';
 import * as Select from '@ariakit/react/select';
 import { Fragment, useState, memo } from 'react';
 import { FileText, LogOut } from 'lucide-react';
-import { useGetUserBalance, useGetStartupConfig } from 'librechat-data-provider/react-query';
+import { useGetUserBalance, useGetUserVip, useGetStartupConfig } from 'librechat-data-provider/react-query';
 import { LinkIcon, GearIcon, DropdownMenuSeparator } from '~/components';
 import FilesView from '~/components/Chat/Input/Files/FilesView';
 import { useAuthContext } from '~/hooks/AuthContext';
@@ -23,6 +23,9 @@ function AccountSettings() {
   const balanceQuery = useGetUserBalance({
     enabled: !!isAuthenticated && startupConfig?.checkBalance,
   });
+  const vipQuery = useGetUserVip({
+    enabled: !!isAuthenticated,
+  });
   const [showManagement, setShowManagement] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showCharge, setshowCharge] = useState(false);
@@ -37,6 +40,7 @@ function AccountSettings() {
     setshowCharge(true);
   };
 
+  console.log('vipQuery', vipQuery);
   return (
     <Select.SelectProvider>
       <Select.Select
@@ -91,35 +95,37 @@ function AccountSettings() {
           {startupConfig?.checkBalance === true &&
             balanceQuery.data != null &&
             !isNaN(parseInt(balanceQuery.data)) && (
-              <div className="text-token-text-secondary ml-3  py-2 text-sm" role="note">
-                {`积分余额: ${parseInt(balanceQuery.data)}`}
-                <button
-                  onClick={() => { handleCharge('point'); }}
-                  style={{
-                    backgroundColor: '#007bff',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '5px 10px',
-                    cursor: 'pointer',
-                    marginLeft: '10px',
-                  }}
-                >
+            <div className="text-token-text-secondary ml-3  py-2 text-sm" role="note">
+              {`积分余额: ${parseInt(balanceQuery.data)}`}
+              <button
+                onClick={() => { handleCharge('point'); }}
+                style={{
+                  backgroundColor: '#007bff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '5px 10px',
+                  cursor: 'pointer',
+                  marginLeft: '10px',
+                }}
+              >
                   充值
-                </button>
-              </div>
-            )}
+              </button>
+            </div>
+          )
+          }
         </div>
 
         <div className="text-token-text-secondary py-2 text-sm" role="note">
-          {user?.vip && (
+          {vipQuery.data && (
             <div className='ml-3'>
-              <span>{user.vip.goodsName}</span>
-              {new Date(user.vip.expiredTime) < new Date() ? <span><span className="ml-1" style={{ color: 'red', fontSize: '11px' }}>(已过期)</span><span className='ml-2' style={{ color: 'blue', cursor: 'pointer' }} onClick={() => { handleCharge('vip'); }}>续费</span></span> : <span className='ml-2'>{formatDateYear(user.vip.expiredTime)}</span>}
+              <span>{vipQuery.data.goodsName}</span>
+              {new Date(vipQuery.data.expiredTime) < new Date() ? <span><span className="ml-1" style={{ color: 'red', fontSize: '11px' }}>(已过期)</span>
+                <span className='ml-2' style={{ color: 'blue', cursor: 'pointer' }} onClick={() => { handleCharge('vip'); }}>续费</span></span> : <span className='ml-2'>{formatDateYear(vipQuery.data.expiredTime)}</span>}
             </div>
           )}
 
-          {!user?.vip && (
+          {!vipQuery.data && (
             <div className="flex justify-between items-center p-2" style={{ background: 'linear-gradient(to left, orange, white)', fontSize: '13px' }}>
               <div>
                 <div style={{ flex: '1', textAlign: 'left', fontSize: '16px' }}>VIP会员</div>  <div>高速通道 无限对话</div>

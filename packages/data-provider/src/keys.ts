@@ -47,6 +47,7 @@ export enum QueryKeys {
   banner = 'banner',
   goods = 'goods',
   orders = 'orders',
+  vip = 'vip',
 }
 
 export enum MutationKeys {

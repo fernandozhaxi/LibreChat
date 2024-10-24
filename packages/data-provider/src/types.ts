@@ -114,16 +114,16 @@ export type TUser = {
   createdAt: string;
   updatedAt: string;
   tokenCredits?: number;
-  vip?: {
-    userId: string,
-    goodsId: string,
-    goodsName: string,
-    goodsLevel: number,
-    expiredTime: Date,
-    id: string,
-  }
 };
 
+export type TVip = {
+  userId: string,
+  goodsId: string,
+  goodsName: string,
+  goodsLevel: number,
+  expiredTime: Date,
+  id: string,
+};
 export type TGoods = {
   id: string;
   name: string;

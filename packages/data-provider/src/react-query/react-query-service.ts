@@ -85,6 +85,17 @@ export const useGetUserBalance = (
   });
 };
 
+export const useGetUserVip = (
+  config?: UseQueryOptions<t.TVip>,
+): QueryObserverResult<t.TVip> => {
+  return useQuery<t.TVip>([QueryKeys.vip], () => dataService.getUserVip(), {
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
+    ...config,
+  });
+};
+
 export const useGetConversationByIdQuery = (
   id: string,
   config?: UseQueryOptions<s.TConversation>,

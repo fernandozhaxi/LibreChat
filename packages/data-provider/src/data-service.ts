@@ -182,6 +182,10 @@ export function getUserBalance(): Promise<string> {
   return request.get(endpoints.balance());
 }
 
+export function getUserVip(): Promise<t.TVip> {
+  return request.get(endpoints.vip());
+}
+
 export const updateTokenCount = (text: string) => {
   return request.post(endpoints.tokenizer(), { arg: text });
 };
