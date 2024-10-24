@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { MessageSquare } from 'lucide-react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
@@ -6,6 +6,7 @@ import { GearIcon } from '~/components/svg';
 import { Vip, Point } from './ChargeTabs';
 import { useMediaQuery } from '~/hooks';
 import { cn } from '~/utils';
+import { useGetGoodsQuery } from '~/data-provider';
 
 export default function ChargeDialog({ open, onOpenChange, type }: {
   open: boolean;
@@ -42,6 +43,18 @@ export default function ChargeDialog({ open, onOpenChange, type }: {
         break;
     }
   };
+
+  const { data: { list: goodsList = [] } = {}, refetch } =
+    useGetGoodsQuery({
+      pageNumber: 1,
+      pageSize: 100,
+      type: activeTab,
+      searchKey: '',
+    });
+
+  useEffect(() => {
+    refetch();
+  }, [refetch, activeTab]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -152,10 +165,10 @@ export default function ChargeDialog({ open, onOpenChange, type }: {
                   </Tabs.List>
                   <div className="overflow-auto sm:w-full sm:max-w-none md:pr-0.5 md:pt-0.5">
                     <Tabs.Content value={'vip'}>
-                      <Vip />
+                      {activeTab === 'vip' && <Vip goodsList={goodsList} />}
                     </Tabs.Content>
                     <Tabs.Content value={'point'}>
-                      <Point />
+                      {activeTab === 'point' && <Point goodsList={goodsList} />}
                     </Tabs.Content>
                   </div>
                 </Tabs.Root>

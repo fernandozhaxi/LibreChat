@@ -155,6 +155,7 @@ const getGoodsByPage = async function (pageNumber = 1, pageSize = 25, searchKey 
           points: 1,
           status: 1,
           level: 1,
+          desc: 1,
         },
       },
       {
