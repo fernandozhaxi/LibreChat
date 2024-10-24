@@ -2,7 +2,7 @@ const { promptTokensEstimate } = require('openai-chat-tokens');
 const { EModelEndpoint, supportsBalanceCheck } = require('librechat-data-provider');
 const { formatFromLangChain } = require('~/app/clients/prompts');
 const checkBalance = require('~/models/checkBalance');
-const { isEnabled } = require('~/server/utils');
+const { isEnabled, checkVip } = require('~/server/utils');
 const { logger } = require('~/config');
 
 const createStartHandler = ({
@@ -50,7 +50,8 @@ const createStartHandler = ({
 
     try {
       // TODO: if plugins extends to non-OpenAI models, this will need to be updated
-      if (isEnabled(process.env.CHECK_BALANCE) && supportsBalanceCheck[EModelEndpoint.openAI]) {
+      if (!checkVip(manager.req, model) &&
+        isEnabled(process.env.CHECK_BALANCE) && supportsBalanceCheck[EModelEndpoint.openAI]) {
         const generations =
           initialMessageCount && messages.length > initialMessageCount
             ? messages.slice(initialMessageCount)

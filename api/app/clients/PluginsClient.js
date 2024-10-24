@@ -9,7 +9,7 @@ const { EModelEndpoint } = require('librechat-data-provider');
 const { formatLangChainMessages } = require('./prompts');
 const checkBalance = require('~/models/checkBalance');
 const { SelfReflectionTool } = require('./tools');
-const { isEnabled } = require('~/server/utils');
+const { isEnabled, checkVip } = require('~/server/utils');
 const { extractBaseURL } = require('~/utils');
 const { loadTools } = require('./tools/util');
 const { getLogStores } = require('~/cache');
@@ -347,7 +347,8 @@ class PluginsClient extends OpenAIClient {
       }
     }
 
-    if (isEnabled(process.env.CHECK_BALANCE)) {
+    if (isEnabled(process.env.CHECK_BALANCE) &&
+      !checkVip(this.options.req, this.modelOptions.model)) {
       await checkBalance({
         req: this.options.req,
         res: this.options.res,
@@ -491,9 +492,8 @@ class PluginsClient extends OpenAIClient {
         const message = orderedMessages.pop();
         const isCreatedByUser = message.isCreatedByUser || message.role?.toLowerCase() === 'user';
         const roleLabel = isCreatedByUser ? this.userLabel : this.chatGptLabel;
-        let messageString = `${this.startToken}${roleLabel}:\n${
-          message.text ?? message.content ?? ''
-        }${this.endToken}\n`;
+        let messageString = `${this.startToken}${roleLabel}:\n${message.text ?? message.content ?? ''
+          }${this.endToken}\n`;
         let newPromptBody = `${messageString}${promptBody}`;
 
         const tokenCountForMessage = this.getTokenCount(messageString);

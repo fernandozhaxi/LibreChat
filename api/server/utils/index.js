@@ -8,6 +8,7 @@ const cryptoUtils = require('./crypto');
 const queue = require('./queue');
 const files = require('./files');
 const math = require('./math');
+const checkVip = require('./checkVip');
 
 /**
  * Check if email configuration is set
@@ -34,4 +35,5 @@ module.exports = {
   ...files,
   ...queue,
   math,
+  checkVip,
 };

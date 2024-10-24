@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { isEnabled } = require('~/server/utils/handleText');
+const { checkVip } = require('~/server/utils');
 const transactionSchema = require('./schema/transaction');
 const { getMultiplier, getCacheMultiplier } = require('./tx');
 const { logger } = require('~/config');
@@ -34,7 +35,7 @@ transactionSchema.statics.create = async function (txData) {
 
   await transaction.save();
 
-  if (!isEnabled(process.env.CHECK_BALANCE)) {
+  if (checkVip(transaction.user) || !isEnabled(process.env.CHECK_BALANCE)) {
     return;
   }
 
@@ -75,7 +76,7 @@ transactionSchema.statics.createStructured = async function (txData) {
 
   await transaction.save();
 
-  if (!isEnabled(process.env.CHECK_BALANCE)) {
+  if (checkVip(transaction.user) || !isEnabled(process.env.CHECK_BALANCE)) {
     return;
   }
 

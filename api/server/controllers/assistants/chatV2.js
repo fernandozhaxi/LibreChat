@@ -18,7 +18,7 @@ const {
   saveAssistantMessage,
 } = require('~/server/services/Threads');
 const { runAssistant, createOnTextProgress } = require('~/server/services/AssistantService');
-const { sendMessage, sleep, isEnabled, countTokens } = require('~/server/utils');
+const { sendMessage, sleep, isEnabled, countTokens, checkVip } = require('~/server/utils');
 const { createErrorHandler } = require('~/server/controllers/assistants/errors');
 const validateAuthor = require('~/server/middleware/assistants/validateAuthor');
 const { createRun, StreamRunManager } = require('~/server/services/Runs');
@@ -124,7 +124,7 @@ const chatV2 = async (req, res) => {
     }
 
     const checkBalanceBeforeRun = async () => {
-      if (!isEnabled(process.env.CHECK_BALANCE)) {
+      if (checkVip(req.user, model) || !isEnabled(process.env.CHECK_BALANCE)) {
         return;
       }
       const transactions =

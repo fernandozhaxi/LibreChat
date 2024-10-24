@@ -10,7 +10,7 @@ const {
   Time,
 } = require('librechat-data-provider');
 const { getMessages, saveMessage, updateMessage, saveConvo } = require('~/models');
-const { addSpaceIfNeeded, isEnabled } = require('~/server/utils');
+const { addSpaceIfNeeded, checkVip, isEnabled } = require('~/server/utils');
 const checkBalance = require('~/models/checkBalance');
 const { getFiles } = require('~/models/File');
 const { getLogStores } = require('~/cache');
@@ -554,6 +554,7 @@ class BaseClient {
 
     if (
       isEnabled(process.env.CHECK_BALANCE) &&
+      !checkVip(this.options.req, this.modelOptions.model) &&
       supportsBalanceCheck[this.options.endpointType ?? this.options.endpoint]
     ) {
       await checkBalance({
