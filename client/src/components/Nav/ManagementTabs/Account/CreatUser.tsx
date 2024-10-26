@@ -54,7 +54,6 @@ export default function CreatUser({
   });
 
   const handleConfirm = (data: TRegisterUser) => {
-    console.log('确认创建新用户', data);
     return createUser.mutate({ ...data });
   };
 

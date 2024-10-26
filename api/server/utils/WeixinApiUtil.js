@@ -2,10 +2,9 @@ const fetch = require('node-fetch');
 // const qs = require('qs');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
-const WxPay = require('wechatpay-node-v3');
-const fs = require('fs');
-const Goods = require('~/models/Goods');
-const Order = require('~/models/Order');
+// const WxPay = require('wechatpay-node-v3');
+// const fs = require('fs');
+// const Goods = require('~/models/Goods');
 
 const { WX_APPID, WX_SECRET, WX_MCH_ID, WX_SERIAL_NO, WX_API_KEY } = process.env;
 const wxConfig = {
@@ -58,10 +57,11 @@ class WeixinApiUtil {
    * @returns
    */
   async getWeixinUser(access_token, openid) {
-    const token = access_token || this.ACCESS_TOKEN;
+    const token = access_token || await this.getAccessToken();
     const url = `https://api.weixin.qq.com/sns/userinfo?access_token=${token}&openid=${openid}&lang=zh_CN`;
 
     try {
+      console.log('获取微信用户');
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -77,6 +77,8 @@ class WeixinApiUtil {
     if (this.ACCESS_TOKEN && moment().isBefore(this.ACCESS_TOKEN_EXPIRE_TIME)) {
       return this.ACCESS_TOKEN;
     }
+    console.log(this.appId);
+    console.log(this.appSecret);
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     try {
       const response = await fetch(url);
@@ -130,37 +132,37 @@ class WeixinApiUtil {
    * PC端微信支付: Native支付
    */
   async createPrePayOrderForPC(req) {
-    const { goodsId } = req.body;
-    // 用goodsId去数据库查询商品信息
-    const goods = await Goods.findOne({ _id: goodsId }).lean();
-    console.log('查到数据库中的商品信息', goods);
-    if (goods) {
-      const goodsName = goods.goodsName;
-      const goodsPrice = goods.price;
-      try {
-        const orderId = uuidv4();
-        const params = {
-          appid: wxConfig.appid,
-          mchid: wxConfig.mchid,
-          description: `购买商品：${goodsName} x 1`, // 商品描述
-          out_trade_no: orderId, // 商户订单号
-          notify_url: 'https://www.cdyz.top/api/pay/wechat', // 通知地址，异步接收微信的回调地址
-          amount: {
-            total: goodsPrice, // 订单总金额，单位：分
-            currency: 'CNY',
-          },
-        };
-        const { code_url } = await wxPay.transactions_native(params);
-        return {
-          qrCode: code_url,
-          orderId: orderId,
-          total: goodsPrice,
-        };
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    return;
+    // const { goodsId } = req.body;
+    // // 用goodsId去数据库查询商品信息
+    // const goods = await Goods.findOne({ _id: goodsId }).lean();
+    // console.log('查到数据库中的商品信息', goods);
+    // if (goods) {
+    //   const goodsName = goods.goodsName;
+    //   const goodsPrice = goods.price;
+    //   try {
+    //     const orderId = uuidv4();
+    //     const params = {
+    //       appid: wxConfig.appid,
+    //       mchid: wxConfig.mchid,
+    //       description: `购买商品：${goodsName} x 1`, // 商品描述
+    //       out_trade_no: orderId, // 商户订单号
+    //       notify_url: 'https://www.cdyz.top/api/pay/wechat', // 通知地址，异步接收微信的回调地址
+    //       amount: {
+    //         total: goodsPrice, // 订单总金额，单位：分
+    //         currency: 'CNY',
+    //       },
+    //     };
+    //     const { code_url } = await wxPay.transactions_native(params);
+    //     return {
+    //       qrCode: code_url,
+    //       orderId: orderId,
+    //       total: goodsPrice,
+    //     };
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
+    // return;
   }
 
   /**

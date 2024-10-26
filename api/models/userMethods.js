@@ -24,6 +24,8 @@ const getUserById = async function (userId, fieldsToSelect = null) {
   if (user) {
     // 查询与该用户对应的 VIP 信息
     const vip = await Vip.findOne({ user: userId }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    // 查询与该用户对应的积分信息
+    const balance = await Balance.findOne({ user: user.id || user._id });
     user = {
       ...user,
       vip: vip ? {
@@ -33,6 +35,7 @@ const getUserById = async function (userId, fieldsToSelect = null) {
         goodsLevel: vip.goodsLevel,
         expiredTime: vip.expiredTime,
       } : null,
+      balance: balance?.tokenCredits || 0,
     };
   }
 
@@ -55,6 +58,8 @@ const findUser = async function (searchCriteria, fieldsToSelect = null) {
   if (user) {
     // 查询与该用户对应的 VIP 信息
     const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    // 查询与该用户对应的积分信息
+    const balance = await Balance.findOne({ user: user.id || user._id });
     user = {
       ...user,
       vip: vip ? {
@@ -64,6 +69,7 @@ const findUser = async function (searchCriteria, fieldsToSelect = null) {
         goodsLevel: vip.goodsLevel,
         expiredTime: vip.expiredTime,
       } : null,
+      balance: balance?.tokenCredits || 0,
     };
   }
 

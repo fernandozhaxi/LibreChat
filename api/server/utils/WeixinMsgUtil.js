@@ -19,6 +19,8 @@ class WeixinMsgUtil {
     receiveMessage.msgId = jsonObject.msgid?.[0] || '';
     receiveMessage.event = jsonObject.event?.[0] || '';
     receiveMessage.ticket = jsonObject.ticket?.[0] || '';
+    receiveMessage.picUrl = jsonObject.picUrl?.[0] || '';
+    receiveMessage.mediaId = jsonObject.mediaId?.[0] || '';
     return receiveMessage;
   }
 
@@ -51,6 +53,23 @@ class WeixinMsgUtil {
   static getQrCodeTicket(receiveMessage) {
     return receiveMessage.ticket;
   }
+  /**
+   * 是否是普通消息
+   *
+   * @param {ReceiveMessage} receiveMessage
+   * @return {boolean}
+   */
+  static isNormalMsg(receiveMessage) {
+    return [
+      'text',
+      'image',
+      'voice',
+      'video',
+      'shortvideo',
+      'location',
+      'link',
+    ].includes(receiveMessage.msgType);
+  }
 }
 
 class ReceiveMessage {
@@ -63,6 +82,8 @@ class ReceiveMessage {
     this.msgId = '';
     this.event = '';
     this.ticket = '';
+    this.picUrl = '';
+    this.mediaId = '';
   }
   getReplyTextMsg(msg) {
     const xml =

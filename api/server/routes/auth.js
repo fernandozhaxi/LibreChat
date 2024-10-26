@@ -11,12 +11,9 @@ const {
   wxOAuthLoginController,
   getWxQrCode,
   wxCheckQrCode,
-} = require('~/server/controllers/auth/WeixinUserController');
-
-const {
   weixinCheckGet,
   weixinCheckPost,
-} = require('~/server/controllers/auth/WeixinServerController');
+} = require('~/server/controllers/auth/WeixinController');
 
 const {
   checkBan,

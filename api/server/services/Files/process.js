@@ -301,9 +301,8 @@ const uploadImageBuffer = async ({ req, context, metadata = {}, resize = true })
       inputBuffer: buffer,
       desiredFormat: req.app.locals.imageOutputType,
     }));
-    filename = `${path.basename(req.file.originalname, path.extname(req.file.originalname))}.${
-      req.app.locals.imageOutputType
-    }`;
+    filename = `${path.basename(req.file.originalname, path.extname(req.file.originalname))}.${req.app.locals.imageOutputType
+      }`;
   }
 
   const filepath = await saveBuffer({ userId: req.user.id, fileName: filename, buffer });
@@ -519,9 +518,8 @@ const processOpenAIFile = async ({
 }) => {
   const _file = await openai.files.retrieve(file_id);
   const originalName = filename ?? (_file.filename ? path.basename(_file.filename) : undefined);
-  const filepath = `${openai.baseURL}/files/${userId}/${file_id}${
-    originalName ? `/${originalName}` : ''
-  }`;
+  const filepath = `${openai.baseURL}/files/${userId}/${file_id}${originalName ? `/${originalName}` : ''
+    }`;
   const type = mime.getType(originalName ?? file_id);
   const source =
     openai.req.body.endpoint === EModelEndpoint.azureAssistants
@@ -707,6 +705,7 @@ function filterFile({ req, file, image }) {
     throw new Error('No file_id provided');
   }
 
+  console.log('收到的文件', file);
   if (file.size === 0) {
     throw new Error('Empty file uploaded');
   }
