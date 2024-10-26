@@ -27,7 +27,7 @@ export default function Account() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSwitchDialog, setShowSwitchDialog] = useState(false);
   const [showCreatGoodsDialog, setShowCreatGoodsDialog] = useState(false);
-  const [currentType, setCurrentType] = useState<string>('vip');
+  const [currentType, setCurrentType] = useState<string>('');
   const [searchKey, setSearchKey] = useState('');
   const pageSize = 10; // 每页的用户数
 
@@ -183,7 +183,7 @@ export default function Account() {
         </Table>
       </div>
       <div className="ml-4 mr-4 mt-4 flex h-auto items-center justify-end space-x-2 py-4 sm:ml-0 sm:mr-0 sm:h-0">
-        <div className="text-muted-foreground ml-2 flex-1 text-sm">{`共${totalGoods}个商品`}</div>
+        <div className="ml-2 flex-1 text-sm text-muted-foreground">{`共${totalGoods}个商品`}</div>
         <Button
           className="select-none border-border-medium"
           variant="outline"

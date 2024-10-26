@@ -1,10 +1,9 @@
 const checkVip = function (req, model) {
-  const { vip } = req.user;
-
-  if (!vip) {
+  if (!req.user?.vip) {
     return false;
   }
 
+  const { vip } = req.user;
   const currentTime = new Date();
   const expiredTime = new Date(vip.expiredTime);
 
