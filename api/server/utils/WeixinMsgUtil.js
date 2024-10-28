@@ -104,6 +104,27 @@ class ReceiveMessage {
       '     </xml>';
     return xml;
   }
+  getReplyImageMsg(mediaId) {
+    const xml =
+      '<xml>\n' +
+      '       <ToUserName><![CDATA[' +
+      this.fromUserName +
+      ']]></ToUserName>\n' +
+      '       <FromUserName><![CDATA[' +
+      this.toUserName +
+      ']]></FromUserName>\n' +
+      '       <CreateTime>' +
+      new Date().getTime() +
+      '</CreateTime>\n' +
+      '       <MsgType><![CDATA[image]]></MsgType>\n' +
+      '       <Image>' +
+      '       <MediaId><![CDATA[' +
+      mediaId +
+      ']]></MediaId>\n' +
+      '</Image>\n' +
+      '     </xml>';
+    return xml;
+  }
 }
 
 module.exports = WeixinMsgUtil;

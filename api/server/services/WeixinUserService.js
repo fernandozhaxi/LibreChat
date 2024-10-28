@@ -99,7 +99,6 @@ const handleSubscribeEvent = async (receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
   let user = await User.findOne({ wxOpenId: openid }).lean();
   if (!user) {
-    console.log('关注时用户不存在，需要创建用户');
     const user = await weixinApiUtil.getWeixinUser(null, openid);
     const { nickname, headimgurl } = user;
     await createWeixinUser(openid, nickname, headimgurl);
@@ -138,7 +137,7 @@ const handleNormalTextMsg = async (receiveMessage) => {
     const currentTime = new Date();
     const expiredTime = new Date(vip.expiredTime);
     if (currentTime > expiredTime) {
-      return receiveMessage.getReplyTextMsg('您的会员已过期，请联系客服充值！');
+      return receiveMessage.getReplyImageMsg(100000003);
     } else {
       const content = receiveMessage.content;
       const result = await askAiText(content, openid);
@@ -149,8 +148,7 @@ const handleNormalTextMsg = async (receiveMessage) => {
       return receiveMessage.getReplyTextMsg(result);
     }
   }
-
-  return receiveMessage.getReplyTextMsg('请联系客服开通会员！');
+  return receiveMessage.getReplyImageMsg(100000002);
 };
 
 const askAiText = async (text, openid) => {

@@ -27,7 +27,7 @@ function Point({ goodsList }) {
         ))}
       </div>  添加客服微信充值积分
       <img
-        src="/assets/kefu.jpg"
+        src="https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg"
         style={{ width: '200px' }}
       />
     </div>
