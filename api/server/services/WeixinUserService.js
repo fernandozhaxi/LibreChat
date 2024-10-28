@@ -60,16 +60,25 @@ const createWeixinUser = async (openid, nickname, avatar) => {
 
 const handleWeixinMsg = async (req, weixinApiUtil) => {
   const { openid } = req.query;
-  console.log(req.query);
+  let user = await User.findOne({ wxOpenId: openid }).lean();
+  if (!user) {
+    const user = await weixinApiUtil.getWeixinUser(null, openid);
+    const { nickname, headimgurl } = user;
+    await createWeixinUser(openid, nickname, headimgurl);
+    logger.info(
+      '[Handle weixin msg create new user]: ' + user.nickname,
+    );
+  } else {
+    logger.info(
+      '[Exists  user]',
+    );
+    logger.info(
+      JSON.stringify(user),
+    );
+  }
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
-    let user = await User.findOne({ wxOpenId: openid }).lean();
-    if (!user) {
-      const user = await weixinApiUtil.getWeixinUser(null, openid);
-      const { nickname, headimgurl } = user;
-      await createWeixinUser(openid, nickname, headimgurl);
-    }
     return handleScanLogin(receiveMessage, openid);
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
@@ -98,24 +107,7 @@ const handleScanLogin = (receiveMessage) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleSubscribeEvent = async (receiveMessage, weixinApiUtil) => {
-  const openid = receiveMessage.fromUserName;
-  let user = await User.findOne({ wxOpenId: openid }).lean();
-  if (!user) {
-    const user = await weixinApiUtil.getWeixinUser(null, openid);
-    const { nickname, headimgurl } = user;
-    await createWeixinUser(openid, nickname, headimgurl);
-    logger.info(
-      '[Subscribe create new user] openid: ' + openid + '/' + user.nickname,
-    );
-  } else {
-    logger.info(
-      '[Subscribe exists  user] ',
-    );
-    logger.info(
-      JSON.stringify(user),
-    );
-  }
+const handleSubscribeEvent = async (receiveMessage) => {
   return receiveMessage.getReplyTextMsg('欢迎关注！');
 };
 /**
