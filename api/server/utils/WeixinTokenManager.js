@@ -3,18 +3,18 @@ class TokenManager {
     this.tokens = {};
   }
 
-  getTokenInfo(user) {
-    return this.tokens[user] || null;
+  getTokenInfo(openId) {
+    return this.tokens[openId] || null;
   }
 
-  updateTokenInfo(user, accessToken = null, refreshToken = null) {
-    if (!this.tokens[user]) { return; }
+  updateTokenInfo(openId, accessToken = null, refreshToken = null) {
+    if (!this.tokens[openId]) { return; }
 
     if (accessToken) {
-      this.tokens[user].access_token = accessToken;
+      this.tokens[openId].access_token = accessToken;
     }
     if (refreshToken) {
-      this.tokens[user].refresh_token = refreshToken;
+      this.tokens[openId].refresh_token = refreshToken;
     }
   }
 }

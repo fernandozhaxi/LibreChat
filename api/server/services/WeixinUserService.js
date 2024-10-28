@@ -4,6 +4,9 @@ const Vip = require('~/models/Vip');
 const bcrypt = require('bcryptjs');
 const Balance = require('~/models/Balance');
 const WeixinMsgUtil = require('~/server/utils/WeixinMsgUtil');
+const WeixinRequest = require('~/server/utils/WeixinRequest');
+const WeixinTokenManager = require('~/server/utils/WeixinTokenManager');
+const WeixinConversationManager = require('~/server/utils/WeixinConversationManager');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 /**
  * @param {string} signature
@@ -30,7 +33,7 @@ const createWeixinUser = async (openid, nickname, avatar) => {
     wxOpenId: openid,
     username: nickname,
     avatar: avatar,
-    email: `${openid}@user.com`,
+    email: `${openid.substring(0, 10)}@user.com`,
     password: bcrypt.hashSync(openid, bcrypt.genSaltSync(10)),
   });
 
@@ -66,7 +69,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
     }
     return handleScanLogin(receiveMessage, openid);
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
-    return handleFocusEvent(receiveMessage, weixinApiUtil);
+    return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
     return handleNormalMsg(receiveMessage);
   }
@@ -92,10 +95,11 @@ const handleScanLogin = (receiveMessage) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleFocusEvent = async (receiveMessage, weixinApiUtil) => {
+const handleSubscribeEvent = async (receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
   let user = await User.findOne({ wxOpenId: openid }).lean();
   if (!user) {
+    console.log('关注时用户不存在，需要创建用户');
     const user = await weixinApiUtil.getWeixinUser(null, openid);
     const { nickname, headimgurl } = user;
     await createWeixinUser(openid, nickname, headimgurl);
@@ -118,6 +122,9 @@ const handleNormalMsg = (receiveMessage) => {
   return receiveMessage.getReplyTextMsg('暂时不支持此类型的消息');
 };
 
+const weixinTokenManager = new WeixinTokenManager();
+const weixinConversationManager = new WeixinConversationManager();
+
 /**
  *
  * @param {ReceiveMessage} receiveMessage
@@ -128,25 +135,23 @@ const handleNormalTextMsg = async (receiveMessage) => {
   const user = await User.findOne({ wxOpenId: openid }).lean();
   const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
   if (vip) {
-    // 判断是否过期
     const currentTime = new Date();
     const expiredTime = new Date(vip.expiredTime);
     if (currentTime > expiredTime) {
       return receiveMessage.getReplyTextMsg('您的会员已过期，请联系客服充值！');
     } else {
       const content = receiveMessage.content;
-      // 判断是否需要重新登录
-
-      // 判断是否有没有结束的对话
-
-      // 继续调用ask接口对话？
-
-      // 把content转发给openAi，只能使用mini模型
-      return receiveMessage.getReplyTextMsg('您是尊贵的' + vip.goodsName);
+      const result = await askAiText(content, openid);
+      return receiveMessage.getReplyTextMsg(result);
     }
   }
 
   return receiveMessage.getReplyTextMsg('请联系客服开通会员！');
+};
+
+const askAiText = async (text, openid) => {
+  const request = new WeixinRequest(openid, weixinTokenManager);
+  return request.getTextResponse(text, weixinConversationManager);
 };
 
 /**

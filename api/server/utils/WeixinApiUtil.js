@@ -132,6 +132,7 @@ class WeixinApiUtil {
    * PC端微信支付: Native支付
    */
   async createPrePayOrderForPC(req) {
+    console.log(req);
     // const { goodsId } = req.body;
     // // 用goodsId去数据库查询商品信息
     // const goods = await Goods.findOne({ _id: goodsId }).lean();
@@ -170,6 +171,7 @@ class WeixinApiUtil {
    * @returns
    */
   async handleWeixinPayMsg(req, res) {
+    console.log(req, res);
     // 解密通知参数
     // const decrypted = await wxPay.decipher_gcm(
     //   req.body.resource.ciphertext,

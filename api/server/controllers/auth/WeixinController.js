@@ -38,7 +38,7 @@ const wxOAuthLoginController = async (req, res) => {
   }
 };
 
-// 获取微信登录二维码
+// Get wechat login qrcode
 const getWxQrCode = async (req, res) => {
   try {
     const qrInfo = await weixinApiUtil.getQrCode();
@@ -48,7 +48,7 @@ const getWxQrCode = async (req, res) => {
   }
 };
 
-// 检查是否扫码成功
+// Check if scan success
 const wxCheckQrCode = async (req, res) => {
   const { code } = req.body;
   const openId = WeixinQrCodeCacheUtil.get(code);
@@ -61,7 +61,7 @@ const wxCheckQrCode = async (req, res) => {
   }
 };
 
-// 用于配置服务器时做token验证
+// Handle wechat server check our server
 const weixinCheckGet = async (req, res) => {
   const { echostr, signature, timestamp, nonce } = req.query;
   if (checkSignature(signature, timestamp, nonce)) {
@@ -70,7 +70,7 @@ const weixinCheckGet = async (req, res) => {
   return res.status(500).send('Wechat verify failed!');
 };
 
-// 扫码后接收微信事件以及后续处理
+// Handle wechat server call our server
 const weixinCheckPost = async (req, res) => {
   const { signature, timestamp, nonce } = req.query;
   if (checkSignature(signature, timestamp, nonce)) {

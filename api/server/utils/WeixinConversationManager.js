@@ -3,8 +3,8 @@ class ConversationManager {
     this.conversations = {};
   }
 
-  getConversationData(user) {
-    return this.conversations[user] || {
+  getConversationData(openId) {
+    return this.conversations[openId] || {
       conversationId: null,
       messageId: '00000000-0000-0000-0000-000000000000',
       generation: null,
@@ -12,18 +12,18 @@ class ConversationManager {
     };
   }
 
-  updateConversationData(user, data) {
-    if (!this.conversations[user]) {
-      this.conversations[user] = {};
+  updateConversationData(openId, data) {
+    if (!this.conversations[openId]) {
+      this.conversations[openId] = {};
     }
-    this.conversations[user] = {
-      ...this.conversations[user],
+    this.conversations[openId] = {
+      ...this.conversations[openId],
       ...data,
     };
   }
 
-  deleteConversationData(user) {
-    delete this.conversations[user];
+  deleteConversationData(openId) {
+    delete this.conversations[openId];
   }
 }
 

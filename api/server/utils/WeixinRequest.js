@@ -1,6 +1,5 @@
-const axios = require('axios');
 const uuid = require('uuid');
-const base_url = 'https://1ce6374ed662.vicp.fun';
+const base_url = 'https://www.cdyz.top';
 
 class LibreChatAPI {
   constructor() {
@@ -13,13 +12,13 @@ class LibreChatAPI {
   async login(email, password) {
     const url = `${base_url}${this.loginApi}`;
     const credentials = { email, password };
-    try {
-      const response = await axios.post(url, credentials);
-      return response;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
   }
 
   async refreshToken(accessToken, refreshToken) {
@@ -28,24 +27,19 @@ class LibreChatAPI {
       'Authorization': `Bearer ${accessToken}`,
       'Cookie': `refreshToken=${refreshToken}`,
     };
-    try {
-      const response = await axios.post(url, {}, { headers });
-      return response;
-    } catch (error) {
-      console.error('Refresh token error:', error);
-      throw error;
-    }
+    return await fetch(url, {
+      method: 'POST',
+      headers: headers,
+    });
   }
 
   async ask(headers, data) {
     const url = `${base_url}${this.askApi}`;
-    try {
-      const response = await axios.post(url, data, { headers, responseType: 'stream' });
-      return response;
-    } catch (error) {
-      console.error('Ask error:', error);
-      throw error;
-    }
+    return await fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(data),
+    });
   }
 
   async uploadImage(headers, file) {
@@ -57,72 +51,68 @@ class LibreChatAPI {
     formData.append('height', '1707');
     formData.append('endpoint', 'openAI');
 
-    // 使用 headers 的 boundary 进行设置
-    const response = await axios.post(url, formData, {
+    return await fetch(url, {
+      method: 'POST',
       headers: {
         ...headers,
-        ...formData.getHeaders(),
+        // Note that FormData automatically sets the appropriate boundary
       },
+      body: formData,
     });
-    return response;
   }
 }
 
 class Request {
-  constructor(user, tokenManager) {
-    this.user = user;
+  constructor(openId, tokenManager) {
+    this.openId = openId;
     this.tokenManager = tokenManager;
-    this.libreChatAPI = LibreChatAPI();
+    this.libreChatAPI = new LibreChatAPI();
     this.accessToken = this._getAccessToken();
     this.refreshToken = this._getRefreshToken();
   }
 
   _getAccessToken() {
-    const tokenInfo = this.tokenManager.getTokenInfo(this.user);
+    const tokenInfo = this.tokenManager.getTokenInfo(this.openId);
     return tokenInfo ? tokenInfo.access_token : null;
   }
 
   _getRefreshToken() {
-    const tokenInfo = this.tokenManager.getTokenInfo(this.user);
+    const tokenInfo = this.tokenManager.getTokenInfo(this.openId);
     return tokenInfo ? tokenInfo.refresh_token : null;
   }
 
   async _login(email, password) {
     try {
       const response = await this.libreChatAPI.login(email, password);
-      if (response.status === 200) {
-        const data = response.data;
-        this.accessToken = data.token;
-        this.refreshToken = response.headers['set-cookie'].split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
-        return this.accessToken;
-      } else {
-        console.log('Login failed:', response.status);
-      }
+      const data = await response.json();
+      this.accessToken = data.token;
+      const cookie = response.headers.get('set-cookie');
+      this.refreshToken = cookie.split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
+      return this.accessToken;
     } catch (error) {
       console.error('Login error:', error);
     }
   }
 
   async _refreshToken() {
-    const email = user_credentials[this.user].email;
-    const password = user_credentials[this.user].password;
+    const email = `${this.openId.substring(0, 10)}@user.com`;
+    const password = this.openId;
 
     if (!this.accessToken && !this.refreshToken) {
       await this._login(email, password);
     } else {
       const response = await this.libreChatAPI.refreshToken(this.accessToken, this.refreshToken);
-      console.log('refresh token', response);
+      const data = await response.json();
       if (response.status === 200) {
-        const data = response.data;
         this.accessToken = data.token;
-        this.refreshToken = response.headers['set-cookie'].split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
+        const cookie = response.headers.get('set-cookie');
+        this.refreshToken = cookie.split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
       } else {
-        console.log('Need relogin');
         await this._login(email, password);
       }
     }
 
-    this.tokenManager.updateTokenInfo(this.user, this.accessToken, this.refreshToken);
+    this.tokenManager.updateTokenInfo(this.openId, this.accessToken, this.refreshToken);
     return this.accessToken;
   }
 
@@ -134,20 +124,17 @@ class Request {
     };
 
     if (isUpload) {
-      const boundary = '----WebKitFormBoundary' + Math.random().toString(36).slice(2);
-      headers['Content-Type'] = `multipart/form-data; boundary=${boundary}`;
-      headers['Boundary'] = boundary;
+      headers['Content-Type'] = 'multipart/form-data';
     } else {
       headers['Content-Type'] = 'application/json';
     }
-
     return headers;
   }
 
-  async getResponse(prompt, conversationManager) {
-    const conversationData = conversationManager.getConversationData(this.user);
+  async getTextResponse(text, conversationManager) {
+    const conversationData = conversationManager.getConversationData(this.openId);
 
-    const data = {
+    const params = {
       conversationId: conversationData.conversationId,
       endpoint: 'openAI',
       error: false,
@@ -162,34 +149,43 @@ class Request {
       parentMessageId: conversationData.messageId,
       responseMessageId: conversationData.messageId,
       sender: 'User',
-      text: prompt,
+      text: text,
     };
 
-    console.log(data);
-    let response = await this.libreChatAPI.ask(this.getHeaders(false), data);
+    let response = await this.libreChatAPI.ask(this.getHeaders(false), params);
 
-    console.log('response:', response);
     if (response.status === 401) {
       await this._refreshToken();
-      response = await this.libreChatAPI.ask(this.getHeaders(false), data);
+      response = await this.libreChatAPI.ask(this.getHeaders(false), params);
     }
 
-    console.log('response:', response);
-    let final_response = {};
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
 
-    if (response.status === 200) {
-      final_response = response.data;
-      console.log('final_response', final_response);
-      conversationManager.updateConversationData(this.user, {
-        conversationId: final_response.responseMessage.conversationId,
-        messageId: final_response.responseMessage.messageId,
-        generation: final_response.responseMessage.text,
-        files: [], // clear files
-      });
-      return final_response.responseMessage.text;
-    } else {
-      return null;
+    let result = '';
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      let text = decoder.decode(value, { stream: false });
+      text = text.trim();
+      result += text;
     }
+    const msgList = result.split('\n');
+    let lastMsg = msgList[msgList.length - 1];
+    lastMsg = lastMsg.replace('data: ', '');
+    lastMsg = JSON.parse(lastMsg);
+
+    let final_response = lastMsg.responseMessage;
+    conversationManager.updateConversationData(this.openId, {
+      conversationId: final_response.conversationId,
+      messageId: final_response.messageId,
+      generation: final_response.text,
+      files: [], // clear files
+    });
+    return final_response.text;
   }
 
   async uploadImage(imageData, conversationManager) {
@@ -205,7 +201,7 @@ class Request {
 
     if (response.status === 200) {
       const fileData = response.data;
-      const conversationData = conversationManager.getConversationData(this.user);
+      const conversationData = conversationManager.getConversationData(this.openId);
 
       if (!conversationData.files) {
         conversationData.files = [];
@@ -220,7 +216,7 @@ class Request {
         type: fileData.type,
       });
 
-      conversationManager.updateConversationData(this.user, {
+      conversationManager.updateConversationData(this.openId, {
         files: files,
       });
 

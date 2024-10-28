@@ -63,11 +63,11 @@ class WeixinMsgUtil {
     return [
       'text',
       'image',
-      'voice',
-      'video',
-      'shortvideo',
-      'location',
-      'link',
+      // 'voice',
+      // 'video',
+      // 'shortvideo',
+      // 'location',
+      // 'link',
     ].includes(receiveMessage.msgType);
   }
 }
