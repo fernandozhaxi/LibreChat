@@ -8,6 +8,8 @@ const WeixinRequest = require('~/server/utils/WeixinRequest');
 const WeixinTokenManager = require('~/server/utils/WeixinTokenManager');
 const WeixinConversationManager = require('~/server/utils/WeixinConversationManager');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
+const { logger } = require('~/config');
+
 /**
  * @param {string} signature
  * @param {string} timestamp
@@ -58,6 +60,7 @@ const createWeixinUser = async (openid, nickname, avatar) => {
 
 const handleWeixinMsg = async (req, weixinApiUtil) => {
   const { openid } = req.query;
+  console.log(req.query);
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
@@ -71,7 +74,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
-    return handleNormalMsg(receiveMessage);
+    return handleNormalMsg(receiveMessage, weixinApiUtil);
   }
 };
 
@@ -102,6 +105,16 @@ const handleSubscribeEvent = async (receiveMessage, weixinApiUtil) => {
     const user = await weixinApiUtil.getWeixinUser(null, openid);
     const { nickname, headimgurl } = user;
     await createWeixinUser(openid, nickname, headimgurl);
+    logger.info(
+      '[Subscribe create new user] openid: ' + openid + '/' + user.nickname,
+    );
+  } else {
+    logger.info(
+      '[Subscribe exists  user] ',
+    );
+    logger.info(
+      JSON.stringify(user),
+    );
   }
   return receiveMessage.getReplyTextMsg('欢迎关注！');
 };
@@ -110,13 +123,13 @@ const handleSubscribeEvent = async (receiveMessage, weixinApiUtil) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalMsg = (receiveMessage) => {
+const handleNormalMsg = (receiveMessage, weixinApiUtil) => {
   const type = receiveMessage.msgType;
   if (type === 'text') {
-    return handleNormalTextMsg(receiveMessage);
+    return handleNormalTextMsg(receiveMessage, weixinApiUtil);
   }
   if (type === 'image') {
-    return handleNormalImageMsg(receiveMessage);
+    return handleNormalImageMsg(receiveMessage, weixinApiUtil);
   }
   return receiveMessage.getReplyTextMsg('暂时不支持此类型的消息');
 };
@@ -129,7 +142,7 @@ const weixinConversationManager = new WeixinConversationManager();
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalTextMsg = async (receiveMessage) => {
+const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
   const user = await User.findOne({ wxOpenId: openid }).lean();
   const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
@@ -137,18 +150,36 @@ const handleNormalTextMsg = async (receiveMessage) => {
     const currentTime = new Date();
     const expiredTime = new Date(vip.expiredTime);
     if (currentTime > expiredTime) {
-      return receiveMessage.getReplyImageMsg(100000003);
+      const list = await weixinApiUtil.getAssets();
+      console.log(list);
+      logger.info(
+        '[image list]: ',
+      );
+      const image = list.item.find(i => i.name.includes('continue'));
+      if (image) {
+        return receiveMessage.getReplyImageMsg(image.media_id);
+      }
+      return receiveMessage.getReplyTextMsg('请联系客服开通会员');
     } else {
       const content = receiveMessage.content;
-      const result = await askAiText(content, openid);
       if (content === '结束对话') {
         weixinConversationManager.deleteConversationData(openid);
         return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
       }
+      const result = await askAiText(content, openid);
       return receiveMessage.getReplyTextMsg(result);
     }
   }
-  return receiveMessage.getReplyImageMsg(100000002);
+  const list = await weixinApiUtil.getAssets();
+  console.log(list);
+  logger.info(
+    '[image list]: ',
+  );
+  const image = list.item.find(i => i.name.includes('open'));
+  if (image) {
+    return receiveMessage.getReplyImageMsg(image.media_id);
+  }
+  return receiveMessage.getReplyTextMsg('请联系客服开通会员');
 };
 
 const askAiText = async (text, openid) => {
@@ -162,7 +193,6 @@ const askAiText = async (text, openid) => {
  * @returns template msg
  */
 const handleNormalImageMsg = (receiveMessage) => {
-  console.log(receiveMessage);
   return receiveMessage.getReplyTextMsg('图片消息');
 };
 

@@ -128,6 +128,21 @@ class WeixinApiUtil {
     }
   }
 
+  async getAssets() {
+    const accessToken = await this.getAccessToken();
+    console.log('accessToken', accessToken);
+    const url = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${accessToken}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        'type': 'image',
+        'offset': 0,
+        'count': 20,
+      }),
+    });
+    return await response.json();
+  }
+
   /**
    * PC端微信支付: Native支付
    */
