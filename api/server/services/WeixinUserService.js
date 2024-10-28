@@ -142,6 +142,10 @@ const handleNormalTextMsg = async (receiveMessage) => {
     } else {
       const content = receiveMessage.content;
       const result = await askAiText(content, openid);
+      if (content === '结束对话') {
+        weixinConversationManager.deleteConversationData(openid);
+        return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
+      }
       return receiveMessage.getReplyTextMsg(result);
     }
   }
