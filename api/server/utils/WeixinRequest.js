@@ -1,5 +1,5 @@
 const uuid = require('uuid');
-const base_url = 'https://1ce6374ed662.vicp.fun';
+const base_url = 'https://www.cdyz.top';
 
 class LibreChatAPI {
   constructor() {
