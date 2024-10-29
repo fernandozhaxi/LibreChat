@@ -73,7 +73,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
       '[Exists  user]',
     );
     logger.info(
-      JSON.stringify(user),
+      user.username,
     );
   }
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
@@ -123,7 +123,10 @@ const handleNormalMsg = (receiveMessage, weixinApiUtil) => {
   if (type === 'image') {
     return handleNormalImageMsg(receiveMessage, weixinApiUtil);
   }
-  return receiveMessage.getReplyTextMsg('暂时不支持此类型的消息');
+  if (type === 'voice') {
+    return handleNormalVoiceMsg(receiveMessage, weixinApiUtil);
+  }
+  return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片、语音消息。');
 };
 
 const weixinTokenManager = new WeixinTokenManager();
@@ -143,10 +146,6 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
     const expiredTime = new Date(vip.expiredTime);
     if (currentTime > expiredTime) {
       const list = await weixinApiUtil.getAssets();
-      console.log(list);
-      logger.info(
-        '[image list]: ',
-      );
       const image = list.item.find(i => i.name.includes('continue'));
       if (image) {
         return receiveMessage.getReplyImageMsg(image.media_id);
@@ -163,10 +162,6 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
     }
   }
   const list = await weixinApiUtil.getAssets();
-  console.log(list);
-  logger.info(
-    '[image list]: ',
-  );
   const image = list.item.find(i => i.name.includes('open'));
   if (image) {
     return receiveMessage.getReplyImageMsg(image.media_id);
@@ -185,9 +180,22 @@ const askAiText = async (text, openid) => {
  * @returns template msg
  */
 const handleNormalImageMsg = (receiveMessage) => {
+  // 获取图片地址
+  const { mediaId, picUrl } = receiveMessage;
+  // 下载图片文件
+  console.log('用户发送的图片消息', picUrl, mediaId);
+  // 调用获取临时素材接口拉取数据
   return receiveMessage.getReplyTextMsg('图片消息');
 };
 
+/**
+ *
+ * @param {ReceiveMessage} receiveMessage
+ * @returns template msg
+ */
+const handleNormalVoiceMsg = (receiveMessage) => {
+  return receiveMessage.getReplyTextMsg('语音消息');
+};
 module.exports = {
   checkSignature,
   createWeixinUser,

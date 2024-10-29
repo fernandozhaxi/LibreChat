@@ -63,7 +63,7 @@ class WeixinMsgUtil {
     return [
       'text',
       'image',
-      // 'voice',
+      'voice',
       // 'video',
       // 'shortvideo',
       // 'location',

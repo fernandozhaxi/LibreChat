@@ -61,8 +61,8 @@ class WeixinApiUtil {
     const url = `https://api.weixin.qq.com/sns/userinfo?access_token=${token}&openid=${openid}&lang=zh_CN`;
 
     try {
-      console.log('获取微信用户');
       const response = await fetch(url);
+      console.log('获取微信用户', response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -77,8 +77,6 @@ class WeixinApiUtil {
     if (this.ACCESS_TOKEN && moment().isBefore(this.ACCESS_TOKEN_EXPIRE_TIME)) {
       return this.ACCESS_TOKEN;
     }
-    console.log(this.appId);
-    console.log(this.appSecret);
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
     try {
       const response = await fetch(url);
