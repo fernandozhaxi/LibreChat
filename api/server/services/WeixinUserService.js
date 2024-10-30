@@ -9,8 +9,6 @@ const WeixinTokenManager = require('~/server/utils/WeixinTokenManager');
 const WeixinConversationManager = require('~/server/utils/WeixinConversationManager');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 const { logger } = require('~/config');
-const fetch = require('node-fetch');
-
 /**
  * @param {string} signature
  * @param {string} timestamp
@@ -84,7 +82,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
-    return handleNormalMsg(receiveMessage, weixinApiUtil);
+    return handleNormalMsg(user, receiveMessage, weixinApiUtil);
   }
 };
 
@@ -116,13 +114,14 @@ const handleSubscribeEvent = async (receiveMessage) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalMsg = async (receiveMessage, weixinApiUtil) => {
+const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
   const type = receiveMessage.msgType;
   if (type === 'text') {
-    return handleNormalTextMsg(receiveMessage, weixinApiUtil);
+    // return handleNormalTextMsg(receiveMessage, weixinApiUtil);
+    return await handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
   }
   if (type === 'image') {
-    return await handleNormalImageMsg(receiveMessage, weixinApiUtil);
+    return await handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
   }
   if (type === 'voice') {
     return handleNormalVoiceMsg(receiveMessage, weixinApiUtil);
@@ -180,20 +179,18 @@ const askAiText = async (text, openid) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalImageMsg = async (receiveMessage) => {
+const handleNormalImageMsg = async (user, receiveMessage) => {
   const openid = receiveMessage.fromUserName;
   // const { picUrl } = receiveMessage;
   const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
   try {
-    const response = await fetch(picUrl);
-    const buffer = await response.buffer();
-
     const request = new WeixinRequest(openid, weixinTokenManager);
-    const upResponse = await request.uploadImage(picUrl, buffer, weixinConversationManager);
-    console.log(upResponse);
+    const upResponse = await request.uploadImage(user, picUrl, weixinConversationManager);
+    console.log('上传到Libreacht', upResponse);
 
   } catch (error) {
-    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重新发送');
+    console.log(error);
+    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
   }
 };
 

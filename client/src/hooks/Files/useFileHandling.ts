@@ -171,6 +171,7 @@ const useFileHandling = (params?: UseFileHandling) => {
     formData.append('endpoint', endpoint);
 
     if (!isAssistantsEndpoint(endpoint)) {
+      debugger;
       uploadFile.mutate(formData);
       return;
     }

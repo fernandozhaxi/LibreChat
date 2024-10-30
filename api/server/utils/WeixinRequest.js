@@ -2,6 +2,9 @@ const uuid = require('uuid');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const fetch = require('node-fetch');
+const _formData = require('./formData');
+
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
 const base_url = 'http://localhost:3080';
@@ -47,16 +50,30 @@ class LibreChatAPI {
     });
   }
 
-  async uploadImage(headers, file) {
-    const url = `${base_url}${this.imageApi}`;
-    const formData = new FormData();
-    // const bundary = headers['Boundary'];
-    formData.append('file', file);
-    formData.append('file_id', String(uuid.v4()));
-    formData.append('width', '100');
-    formData.append('height', '100');
-    formData.append('endpoint', 'openAI');
+  async getFormData(headers, buffer, fileName) {
 
+    function setHeader(headers, name, value, keepExisting = false) {
+      const existing = Object.entries(headers).find(pair => pair[0].toLowerCase() === name.toLowerCase());
+      if (!existing) { headers[name] = value; } else if (!keepExisting) { headers[existing[0]] = value; }
+    }
+
+    const formData = new _formData.MultipartFormData();
+    formData.addField('width', '100');
+    formData.addField('height', '100');
+    formData.addField('endpoint', 'openAI');
+    formData.addField('file_id', String(uuid.v4()));
+    formData.addFileField('file', buffer, fileName);
+    setHeader(headers, 'content-type', formData.contentTypeHeader(), true);
+    return formData.finish();
+  };
+
+  async uploadImage(headers, buffer, fileName) {
+    console.log(typeof buffer);
+    console.log(buffer);
+    const url = `${base_url}${this.imageApi}`;
+    const formData = this.getFormData(headers, buffer, fileName);
+    console.log('formData', formData);
+    console.log('headers', headers);
     return await fetch(url, {
       method: 'POST',
       headers,
@@ -193,53 +210,50 @@ class Request {
     return final_response.text;
   }
 
-  async uploadImage(url, buffer, conversationManager) {
-    console.log('上传图片文件', url, buffer);
-
+  async uploadImage(user, url, conversationManager) {
     const fileName = path.basename(url); // 从 URL 中提取文件名
-    const tempFilePath = path.join(__dirname, fileName);
-
-    // 将图片保存到临时文件
-    fs.writeFileSync(tempFilePath, buffer);
-    const file = fs.createReadStream(tempFilePath);
-    let firstHeader = this.getHeaders(true);
-    let response = await this.libreChatAPI.uploadImage(firstHeader, file);
-
-    console.log(response.status);
+    console.log('上传图片文件', url, fileName);
+    const imageData = await fetch(url);
+    const arrayBuffer = await imageData.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
+    let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), uint8Array, fileName);
+    console.log('第一次上传文件', response.status);
     if (response.status === 401) {
       await this._refreshToken();
-      firstHeader = this.getHeaders(true);
-      response = await this.libreChatAPI.uploadImage(firstHeader, file);
+      response = await this.libreChatAPI.uploadImage(this.getHeaders(true), uint8Array, fileName);
+      console.log('再次上传文件');
     }
+    // const json = await response.json();
+    // console.log(response, json);
 
-    // 清理临时文件
-    fs.unlinkSync(tempFilePath);
+    console.log(response.status);
 
-    if (response.status === 200) {
-      const fileData = response.data;
-      const conversationData = conversationManager.getConversationData(this.openId);
+    // if (response.status === 200) {
+    //   const fileData = response.data;
+    //   const conversationData = conversationManager.getConversationData(this.openId);
 
-      if (!conversationData.files) {
-        conversationData.files = [];
-      }
+    //   if (!conversationData.files) {
+    //     conversationData.files = [];
+    //   }
 
-      const files = conversationData.files;
-      files.push({
-        file_id: fileData.file_id,
-        filepath: fileData.filepath,
-        height: fileData.height,
-        width: fileData.width,
-        type: fileData.type,
-      });
+    //   const files = conversationData.files;
+    //   files.push({
+    //     file_id: fileData.file_id,
+    //     filepath: fileData.filepath,
+    //     height: fileData.height,
+    //     width: fileData.width,
+    //     type: fileData.type,
+    //   });
 
-      conversationManager.updateConversationData(this.openId, {
-        files: files,
-      });
+    //   conversationManager.updateConversationData(this.openId, {
+    //     files: files,
+    //   });
 
-      return true;
-    } else {
-      return false;
-    }
+    //   return true;
+    // } else {
+    //   return false;
+    // }
   }
 }
 
