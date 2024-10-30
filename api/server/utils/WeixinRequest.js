@@ -1,6 +1,10 @@
 const uuid = require('uuid');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 // const base_url = 'https://www.cdyz.top';
-const base_url = 'https://1ce6374ed662.vicp.fun';
+// const base_url = 'https://1ce6374ed662.vicp.fun';
+const base_url = 'http://localhost:3080';
 
 class LibreChatAPI {
   constructor() {
@@ -46,18 +50,16 @@ class LibreChatAPI {
   async uploadImage(headers, file) {
     const url = `${base_url}${this.imageApi}`;
     const formData = new FormData();
+    // const bundary = headers['Boundary'];
     formData.append('file', file);
     formData.append('file_id', String(uuid.v4()));
-    formData.append('width', '1280');
-    formData.append('height', '1707');
+    formData.append('width', '100');
+    formData.append('height', '100');
     formData.append('endpoint', 'openAI');
 
     return await fetch(url, {
       method: 'POST',
-      headers: {
-        ...headers,
-        // Note that FormData automatically sets the appropriate boundary
-      },
+      headers,
       body: formData,
     });
   }
@@ -125,7 +127,9 @@ class Request {
     };
 
     if (isUpload) {
-      headers['Content-Type'] = 'multipart/form-data';
+      const boundary = '----WebKitFormBoundary' + crypto.randomBytes(8).toString('hex');
+      headers['Content-Type'] = `multipart/form-data; boundary=${boundary}`;
+      headers['Boundary'] = boundary;
     } else {
       headers['Content-Type'] = 'application/json';
     }
@@ -189,16 +193,27 @@ class Request {
     return final_response.text;
   }
 
-  async uploadImage(imageData, conversationManager) {
+  async uploadImage(url, buffer, conversationManager) {
+    console.log('上传图片文件', url, buffer);
+
+    const fileName = path.basename(url); // 从 URL 中提取文件名
+    const tempFilePath = path.join(__dirname, fileName);
+
+    // 将图片保存到临时文件
+    fs.writeFileSync(tempFilePath, buffer);
+    const file = fs.createReadStream(tempFilePath);
     let firstHeader = this.getHeaders(true);
-    let response = await this.libreChatAPI.uploadImage(firstHeader, imageData);
+    let response = await this.libreChatAPI.uploadImage(firstHeader, file);
 
     console.log(response.status);
     if (response.status === 401) {
       await this._refreshToken();
       firstHeader = this.getHeaders(true);
-      response = await this.libreChatAPI.uploadImage(firstHeader, imageData);
+      response = await this.libreChatAPI.uploadImage(firstHeader, file);
     }
+
+    // 清理临时文件
+    fs.unlinkSync(tempFilePath);
 
     if (response.status === 200) {
       const fileData = response.data;
@@ -223,7 +238,6 @@ class Request {
 
       return true;
     } else {
-      console.log(response.status);
       return false;
     }
   }

@@ -9,6 +9,7 @@ const WeixinTokenManager = require('~/server/utils/WeixinTokenManager');
 const WeixinConversationManager = require('~/server/utils/WeixinConversationManager');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 const { logger } = require('~/config');
+const fetch = require('node-fetch');
 
 /**
  * @param {string} signature
@@ -115,13 +116,13 @@ const handleSubscribeEvent = async (receiveMessage) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalMsg = (receiveMessage, weixinApiUtil) => {
+const handleNormalMsg = async (receiveMessage, weixinApiUtil) => {
   const type = receiveMessage.msgType;
   if (type === 'text') {
     return handleNormalTextMsg(receiveMessage, weixinApiUtil);
   }
   if (type === 'image') {
-    return handleNormalImageMsg(receiveMessage, weixinApiUtil);
+    return await handleNormalImageMsg(receiveMessage, weixinApiUtil);
   }
   if (type === 'voice') {
     return handleNormalVoiceMsg(receiveMessage, weixinApiUtil);
@@ -179,13 +180,21 @@ const askAiText = async (text, openid) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalImageMsg = (receiveMessage) => {
-  // 获取图片地址
-  const { mediaId, picUrl } = receiveMessage;
-  // 下载图片文件
-  console.log('用户发送的图片消息', picUrl, mediaId);
-  // 调用获取临时素材接口拉取数据
-  return receiveMessage.getReplyTextMsg('图片消息');
+const handleNormalImageMsg = async (receiveMessage) => {
+  const openid = receiveMessage.fromUserName;
+  // const { picUrl } = receiveMessage;
+  const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
+  try {
+    const response = await fetch(picUrl);
+    const buffer = await response.buffer();
+
+    const request = new WeixinRequest(openid, weixinTokenManager);
+    const upResponse = await request.uploadImage(picUrl, buffer, weixinConversationManager);
+    console.log(upResponse);
+
+  } catch (error) {
+    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重新发送');
+  }
 };
 
 /**
