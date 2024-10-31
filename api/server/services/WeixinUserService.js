@@ -182,15 +182,25 @@ const askAiText = async (text, openid) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalImageMsg = async (user, receiveMessage) => {
+const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
-  const { picUrl } = receiveMessage;
-  // const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
+  const { picUrl, mediaId } = receiveMessage;
+  logger.info(
+    '[Handle weixin image msg]: ' + picUrl,
+  );
+  logger.info(
+    mediaId,
+  );
+  const imageInfo = await weixinApiUtil.getAssets(mediaId);
+  logger.info(
+    'get temp assets:' + JSON.stringify(imageInfo),
+  );
+  const url = imageInfo.image_url;
   try {
     const request = new WeixinRequest(openid, weixinTokenManager);
-    const success = await request.uploadImage(user, picUrl, weixinConversationManager);
+    const success = await request.uploadImage(user, url, weixinConversationManager);
     if (success) {
-      return receiveMessage.getReplyTextMsg('我已经收到您的图片，需要我做什么？');
+      return receiveMessage.getReplyTextMsg('我收到一张图片，需要我做什么吗？');
     }
     return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
   } catch (error) {

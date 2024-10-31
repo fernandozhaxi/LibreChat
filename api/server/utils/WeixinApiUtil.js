@@ -126,17 +126,25 @@ class WeixinApiUtil {
     }
   }
 
-  async getAssets() {
+  async getAssets(type = 'image') {
     const accessToken = await this.getAccessToken();
-    console.log('accessToken', accessToken);
     const url = `https://api.weixin.qq.com/cgi-bin/material/batchget_material?access_token=${accessToken}`;
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify({
-        'type': 'image',
+        'type': type,
         'offset': 0,
         'count': 20,
       }),
+    });
+    return await response.json();
+  }
+
+  async getTempAssets(mediaId) {
+    const accessToken = await this.getAccessToken();
+    const url = `https://api.weixin.qq.com/cgi-bin/media/get?access_token=${accessToken}&media_id=${mediaId}`;
+    const response = await fetch(url, {
+      method: 'GET',
     });
     return await response.json();
   }
