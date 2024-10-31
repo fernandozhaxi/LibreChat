@@ -180,13 +180,13 @@ const askAiText = async (text, openid) => {
  */
 const handleNormalImageMsg = async (user, receiveMessage) => {
   const openid = receiveMessage.fromUserName;
-  // const { picUrl } = receiveMessage;
-  const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
+  const { picUrl } = receiveMessage;
+  // const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
   try {
     const request = new WeixinRequest(openid, weixinTokenManager);
     const upResponse = await request.uploadImage(user, picUrl, weixinConversationManager);
     if (upResponse) {
-      return receiveMessage.getReplyTextMsg('我已经收到您的图片，需要我帮您做什么？');
+      return receiveMessage.getReplyTextMsg('我已经收到您的图片，需要我做什么？');
     }
     return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
   } catch (error) {
