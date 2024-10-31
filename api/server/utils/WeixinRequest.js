@@ -1,12 +1,12 @@
 const uuid = require('uuid');
 const fetch = require('node-fetch');
 const _formData = require('./formData');
-const { logger } = require('~/config');
+// const { logger } = require('~/config');
 
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
-const base_url = 'http://127.0.0.1:3080';
-// const base_url = 'http://localhost:3080';
+// const base_url = 'http://127.0.0.1:3080';
+const base_url = 'http://localhost:3080';
 
 class LibreChatAPI {
   constructor() {
