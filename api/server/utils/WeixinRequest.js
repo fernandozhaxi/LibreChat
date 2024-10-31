@@ -6,6 +6,7 @@ const _formData = require('./formData');
 
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
+// const base_url = 'http://127.0.0.1:3080';
 const base_url = 'http://localhost:3080';
 
 class LibreChatAPI {
@@ -19,7 +20,7 @@ class LibreChatAPI {
   async login(email, password) {
     const url = `${base_url}${this.loginApi}`;
     const credentials = { email, password };
-    return await fetch(url, {
+    return fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -34,7 +35,7 @@ class LibreChatAPI {
       Authorization: `Bearer ${accessToken}`,
       Cookie: `refreshToken=${refreshToken}`,
     };
-    return await fetch(url, {
+    return fetch(url, {
       method: 'POST',
       headers: headers,
     });
@@ -42,7 +43,7 @@ class LibreChatAPI {
 
   async ask(headers, data) {
     const url = `${base_url}${this.askApi}`;
-    return await fetch(url, {
+    return fetch(url, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(data),
@@ -71,7 +72,7 @@ class LibreChatAPI {
       'Content-Type': contentType,
     };
 
-    return await fetch(url, {
+    return fetch(url, {
       method: 'POST',
       headers: header,
       body: data,
@@ -183,34 +184,37 @@ class Request {
       response = await this.libreChatAPI.ask(this.getHeaders(false), params);
     }
 
-    console.log('ask response', response);
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
+    if (response.status === 200) {
+      let result = '';
+      try {
+        const decoder = new TextDecoder('utf-8');
+        for await (const chunk of response.body) {
+          let text = decoder.decode(chunk, { stream: false });
+          text = text.trim();
+          result += text;
+        }
+        const msgList = result.split('\n');
+        let lastMsg = msgList[msgList.length - 1];
+        lastMsg = JSON.parse(lastMsg);
 
-    let result = '';
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
+        let final_response = lastMsg.responseMessage;
+        if (final_response.error) {
+          return false;
+        } else {
+          conversationManager.updateConversationData(this.openId, {
+            conversationId: final_response.conversationId,
+            messageId: final_response.messageId,
+            generation: final_response.text,
+            files: [], // clear files
+          });
+          return final_response.text;
+        }
+      } catch (err) {
+        return false;
       }
-      let text = decoder.decode(value, { stream: false });
-      text = text.trim();
-      result += text;
+    } else {
+      return false;
     }
-    const msgList = result.split('\n');
-    let lastMsg = msgList[msgList.length - 1];
-    lastMsg = lastMsg.replace('data: ', '');
-    lastMsg = JSON.parse(lastMsg);
-
-    let final_response = lastMsg.responseMessage;
-    conversationManager.updateConversationData(this.openId, {
-      conversationId: final_response.conversationId,
-      messageId: final_response.messageId,
-      generation: final_response.text,
-      files: [], // clear files
-    });
-    return final_response.text;
   }
 
   streamToBuffer(stream) {

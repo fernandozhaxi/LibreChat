@@ -157,7 +157,11 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
         return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
       }
       const result = await askAiText(content, openid);
-      return receiveMessage.getReplyTextMsg(result);
+      console.log('ask result', result);
+      if (result) {
+        return receiveMessage.getReplyTextMsg(result);
+      }
+      return receiveMessage.getReplyTextMsg('服务器发生了错误，请重试。');
     }
   }
   const list = await weixinApiUtil.getAssets();
@@ -170,7 +174,7 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
 
 const askAiText = async (text, openid) => {
   const request = new WeixinRequest(openid, weixinTokenManager);
-  return request.getTextResponse(text, weixinConversationManager);
+  return await request.getTextResponse(text, weixinConversationManager);
 };
 
 /**
@@ -184,8 +188,8 @@ const handleNormalImageMsg = async (user, receiveMessage) => {
   // const picUrl = 'https://wx2.sinaimg.cn/large/c2da5891ly8hv26ec4mmpj20n40n4win.jpg';
   try {
     const request = new WeixinRequest(openid, weixinTokenManager);
-    const upResponse = await request.uploadImage(user, picUrl, weixinConversationManager);
-    if (upResponse) {
+    const success = await request.uploadImage(user, picUrl, weixinConversationManager);
+    if (success) {
       return receiveMessage.getReplyTextMsg('我已经收到您的图片，需要我做什么？');
     }
     return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
