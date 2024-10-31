@@ -117,8 +117,7 @@ const handleSubscribeEvent = async (receiveMessage) => {
 const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
   const type = receiveMessage.msgType;
   if (type === 'text') {
-    // return handleNormalTextMsg(receiveMessage, weixinApiUtil);
-    return await handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
+    return handleNormalTextMsg(receiveMessage, weixinApiUtil);
   }
   if (type === 'image') {
     return await handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
@@ -186,8 +185,10 @@ const handleNormalImageMsg = async (user, receiveMessage) => {
   try {
     const request = new WeixinRequest(openid, weixinTokenManager);
     const upResponse = await request.uploadImage(user, picUrl, weixinConversationManager);
-    console.log('上传到Libreacht', upResponse);
-
+    if (upResponse) {
+      return receiveMessage.getReplyTextMsg('我已经收到您的图片，需要我帮您做什么？');
+    }
+    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
   } catch (error) {
     console.log(error);
     return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');

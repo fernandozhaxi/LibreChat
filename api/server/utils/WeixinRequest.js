@@ -49,35 +49,32 @@ class LibreChatAPI {
     });
   }
 
-  async getFormData(headers, tempPath, fileName) {
-    function setHeader(headers, name, value, keepExisting = false) {
-      const existing = Object.entries(headers).find(
-        (pair) => pair[0].toLowerCase() === name.toLowerCase(),
-      );
-      if (!existing) {
-        headers[name] = value;
-      } else if (!keepExisting) {
-        headers[existing[0]] = value;
-      }
-    }
-
+  async getFormData(headers, buffer, fileName) {
     const formData = new _formData.MultipartFormData();
-    formData.addFileField('file', fileName, fs.createReadStream(tempPath));
+    formData.addFileField('file', fileName, buffer);
     formData.addField('width', '100');
     formData.addField('height', '100');
     formData.addField('endpoint', 'openAI');
     formData.addField('file_id', String(uuid.v4()));
-    setHeader(headers, 'content-type', formData.contentTypeHeader(), true);
-    return formData.finish();
+    return {
+      data: formData.finish(),
+      contentType: formData.contentTypeHeader(),
+    };
   }
 
-  async uploadImage(headers, tempPath, fileName) {
+  async uploadImage(headers, buffer, fileName) {
     const url = `${base_url}${this.imageApi}`;
-    const formData = this.getFormData(headers, tempPath, fileName);
+    const { data, contentType } = await this.getFormData(headers, buffer, fileName);
+    const header =
+    {
+      ...headers,
+      'Content-Type': contentType,
+    };
+
     return await fetch(url, {
       method: 'POST',
-      headers,
-      body: formData,
+      headers: header,
+      body: data,
     });
   }
 }
@@ -186,6 +183,7 @@ class Request {
       response = await this.libreChatAPI.ask(this.getHeaders(false), params);
     }
 
+    console.log('ask response', response);
     const reader = response.body.getReader();
     const decoder = new TextDecoder('utf-8');
 
@@ -215,23 +213,34 @@ class Request {
     return final_response.text;
   }
 
+  streamToBuffer(stream) {
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+
+      stream.on('data', chunk => {
+        chunks.push(chunk);
+      });
+
+      stream.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+
+      stream.on('error', reject);
+    });
+  }
+
   async uploadImage(user, picUrl, conversationManager) {
     const fileName = path.basename(picUrl);
     const downRes = await fetch(picUrl);
-    const buffer = await downRes.buffer();
-    const tempPath = path.join(__dirname, fileName);
-    fs.writeFileSync(tempPath, buffer);
-    let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), tempPath, fileName);
-    console.log('第一次上传文件', response.status);
+    const imageStream = await downRes.body;
+    const buffer = await this.streamToBuffer(imageStream);
+    let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), buffer, fileName);
     if (response.status === 401) {
       await this._refreshToken();
-      response = await this.libreChatAPI.uploadImage(this.getHeaders(true), tempPath, fileName);
-      console.log('再次上传文件');
+      response = await this.libreChatAPI.uploadImage(this.getHeaders(true), buffer, fileName);
     }
-    console.log(response.status);
     if (response.status === 200) {
-      fs.unlinkSync(tempPath);
-      const fileData = response.data;
+      const fileData = response.json();
       const conversationData = conversationManager.getConversationData(this.openId);
 
       if (!conversationData.files) {

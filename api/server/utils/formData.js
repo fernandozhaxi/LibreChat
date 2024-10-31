@@ -1,3 +1,4 @@
+const mime = require('mime');
 class MultipartFormData {
   constructor() {
     this._boundary = void 0;
@@ -16,14 +17,13 @@ class MultipartFormData {
   addFileField(name, filename, value) {
     this._beginMultiPartHeader(name);
     this._chunks.push(Buffer.from(`; filename="${filename}"`));
-    this._chunks.push(Buffer.from('\r\ncontent-type: image/jpg'));
+    this._chunks.push(Buffer.from(`\r\ncontent-type: ${mime.getType(filename)}`));
     this._finishMultiPartHeader();
     this._chunks.push(value);
     this._finishMultiPartField();
   }
   finish() {
     this._addBoundary(true);
-    console.log(this._chunks);
     return Buffer.concat(this._chunks);
   }
   _beginMultiPartHeader(name) {
