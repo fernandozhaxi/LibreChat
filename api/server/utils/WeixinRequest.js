@@ -2,6 +2,7 @@ const uuid = require('uuid');
 const path = require('path');
 const fetch = require('node-fetch');
 const _formData = require('./formData');
+const { logger } = require('~/config');
 
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
@@ -195,8 +196,8 @@ class Request {
         const msgList = result.split('\n');
         let lastMsg = msgList[msgList.length - 1];
         lastMsg = JSON.parse(lastMsg);
-
         let final_response = lastMsg.responseMessage;
+        logger.info(final_response);
         if (final_response.error) {
           return false;
         } else {
