@@ -19,8 +19,8 @@ class WeixinMsgUtil {
     receiveMessage.msgId = jsonObject.msgid?.[0] || '';
     receiveMessage.event = jsonObject.event?.[0] || '';
     receiveMessage.ticket = jsonObject.ticket?.[0] || '';
-    receiveMessage.picUrl = jsonObject.picUrl?.[0] || '';
-    receiveMessage.mediaId = jsonObject.mediaId?.[0] || '';
+    receiveMessage.picUrl = jsonObject.picurl?.[0] || '';
+    receiveMessage.mediaId = jsonObject.mediaid?.[0] || '';
     return receiveMessage;
   }
 

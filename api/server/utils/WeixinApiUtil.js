@@ -146,7 +146,10 @@ class WeixinApiUtil {
     const response = await fetch(url, {
       method: 'GET',
     });
-    return await response.json();
+    if (response.status === 200) {
+      return response.body;
+    }
+    return;
   }
 
   /**

@@ -149,7 +149,7 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
       if (image) {
         return receiveMessage.getReplyImageMsg(image.media_id);
       }
-      return receiveMessage.getReplyTextMsg('请联系客服开通会员');
+      return receiveMessage.getReplyTextMsg('请联系客服续费会员');
     } else {
       const content = receiveMessage.content;
       if (content === '结束对话') {
@@ -182,25 +182,15 @@ const askAiText = async (text, openid) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
+const handleNormalImageMsg = async (user, receiveMessage) => {
   const openid = receiveMessage.fromUserName;
-  const { picUrl, mediaId } = receiveMessage;
-  logger.info(
-    '[Handle weixin image msg]: ' + picUrl,
-  );
-  logger.info(
-    mediaId,
-  );
-  const imageInfo = await weixinApiUtil.getTempAssets(mediaId);
-  logger.info(
-    'get temp assets:' + JSON.stringify(imageInfo),
-  );
-  const url = imageInfo.image_url;
+  const { picUrl } = receiveMessage;
+  // const url = await weixinApiUtil.getTempAssets(mediaId);
   try {
     const request = new WeixinRequest(openid, weixinTokenManager);
-    const success = await request.uploadImage(user, url, weixinConversationManager);
+    const success = await request.uploadImage(user, picUrl, weixinConversationManager);
     if (success) {
-      return receiveMessage.getReplyTextMsg('我收到一张图片，需要我做什么吗？');
+      return receiveMessage.getReplyTextMsg('您发了一张图片，需要我做什么？');
     }
     return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
   } catch (error) {
@@ -214,7 +204,16 @@ const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalVoiceMsg = (receiveMessage) => {
+const handleNormalVoiceMsg = async (receiveMessage, weixinApiUtil) => {
+  // const openid = receiveMessage.fromUserName;
+  const { mediaId } = receiveMessage;
+  const voiceInfo = await weixinApiUtil.getTempAssets(mediaId);
+  logger.info(
+    'get temp assets:' + JSON.stringify(voiceInfo),
+  );
+  // 调用API将语音转换为文本
+
+  // 用文本调用ask请求
   return receiveMessage.getReplyTextMsg('语音消息');
 };
 module.exports = {

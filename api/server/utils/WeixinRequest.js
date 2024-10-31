@@ -1,13 +1,12 @@
 const uuid = require('uuid');
-const path = require('path');
 const fetch = require('node-fetch');
 const _formData = require('./formData');
 const { logger } = require('~/config');
 
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
-// const base_url = 'http://127.0.0.1:3080';
-const base_url = 'http://localhost:3080';
+const base_url = 'http://127.0.0.1:3080';
+// const base_url = 'http://localhost:3080';
 
 class LibreChatAPI {
   constructor() {
@@ -195,9 +194,9 @@ class Request {
         }
         const msgList = result.split('\n');
         let lastMsg = msgList[msgList.length - 1];
+        lastMsg = lastMsg.replace('data: ', '');
         lastMsg = JSON.parse(lastMsg);
         let final_response = lastMsg.responseMessage;
-        logger.info(final_response);
         if (final_response.error) {
           return false;
         } else {
@@ -210,6 +209,7 @@ class Request {
           return final_response.text;
         }
       } catch (err) {
+        console.log(err);
         return false;
       }
     } else {
@@ -234,8 +234,11 @@ class Request {
   }
 
   async uploadImage(user, picUrl, conversationManager) {
-    const fileName = path.basename(picUrl);
     const downRes = await fetch(picUrl);
+    const headers = downRes.headers;
+    const mime = headers.get('Content-Type');;
+    const extention = mime.split('/')[1];
+    const fileName = uuid.v4() + '.' + extention;
     const imageStream = await downRes.body;
     const buffer = await this.streamToBuffer(imageStream);
     let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), buffer, fileName);
