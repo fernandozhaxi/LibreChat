@@ -53,6 +53,9 @@ const createWeixinUser = async (openid, nickname, avatar) => {
   return user;
 };
 
+const weixinTokenManager = new WeixinTokenManager();
+const weixinConversationManager = new WeixinConversationManager();
+
 /**
  * 处理微信对我们服务器的登录回调
  */
@@ -64,16 +67,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
     const user = await weixinApiUtil.getWeixinUser(null, openid);
     const { nickname, headimgurl } = user;
     await createWeixinUser(openid, nickname, headimgurl);
-    logger.info(
-      '[Handle weixin msg create new user]: ' + user.nickname,
-    );
-  } else {
-    logger.info(
-      '[Exists  user]',
-    );
-    logger.info(
-      user.username,
-    );
+    logger.info('[Handle weixin msg create new user]: ' + user.nickname);
   }
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
@@ -84,15 +78,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
     return handleNormalMsg(user, receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isMenuClickEvent(receiveMessage)) {
-    const eventKey = receiveMessage.eventKey;
-    console.log('点击事件切换角色', eventKey);
-    // if (eventKey === 'TECHER') {
-
-    // } else if (eventKey === '我是算命先生') {
-
-    // } else if (eventKey === 'TURIST') {
-
-    // }
+    return handleMenueClickEvent(user, receiveMessage, weixinApiUtil);
   }
 };
 
@@ -138,8 +124,28 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
   return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片、语音消息。');
 };
 
-const weixinTokenManager = new WeixinTokenManager();
-const weixinConversationManager = new WeixinConversationManager();
+/**
+ *
+ * @param {ReceiveMessage} receiveMessage
+ * @returns template msg
+ */
+const handleMenueClickEvent = async (user, receiveMessage, weixinApiUtil) => {
+  const eventKey = receiveMessage.eventKey;
+  let content = '';
+  switch (eventKey) {
+    case 'techer':
+      content = '请你扮演资深教师与我对话';
+      break;
+    case 'destiny':
+      content = '请你扮演算命先生与我对话';
+      break;
+    case 'guide':
+      content = '请你扮演资深导游与我对话';
+      break;
+  }
+  receiveMessage.content = content;
+  return handleNormalTextMsg(receiveMessage, weixinApiUtil);
+};
 
 /**
  *
@@ -149,13 +155,15 @@ const weixinConversationManager = new WeixinConversationManager();
 const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
   const user = await User.findOne({ wxOpenId: openid }).lean();
-  const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
+  const vip = await Vip.findOne({ user: user.id || user._id })
+    .select('goodsName goodsId goodsLevel expiredTime')
+    .lean();
   if (vip) {
     const currentTime = new Date();
     const expiredTime = new Date(vip.expiredTime);
     if (currentTime > expiredTime) {
       const list = await weixinApiUtil.getAssets();
-      const image = list.item.find(i => i.name.includes('continue'));
+      const image = list.item.find((i) => i.name.includes('continue'));
       if (image) {
         return receiveMessage.getReplyImageMsg(image.media_id);
       }
@@ -167,7 +175,6 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
         return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
       }
       const result = await askAiText(content, openid);
-      console.log('ask result', result);
       if (result) {
         return receiveMessage.getReplyTextMsg(result);
       }
@@ -175,7 +182,7 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
     }
   }
   const list = await weixinApiUtil.getAssets();
-  const image = list.item.find(i => i.name.includes('open'));
+  const image = list.item.find((i) => i.name.includes('open'));
   if (image) {
     return receiveMessage.getReplyImageMsg(image.media_id);
   }
@@ -218,9 +225,7 @@ const handleNormalVoiceMsg = async (receiveMessage, weixinApiUtil) => {
   // const openid = receiveMessage.fromUserName;
   const { mediaId } = receiveMessage;
   const voiceInfo = await weixinApiUtil.getTempAssets(mediaId);
-  logger.info(
-    'get temp assets:' + JSON.stringify(voiceInfo),
-  );
+  logger.info('get temp assets:' + JSON.stringify(voiceInfo));
   // 调用API将语音转换为文本
 
   // 用文本调用ask请求

@@ -1,16 +1,14 @@
 const fetch = require('node-fetch');
-// const qs = require('qs');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
 // const WxPay = require('wechatpay-node-v3');
-// const fs = require('fs');
 // const Goods = require('~/models/Goods');
 
 const { WX_APPID, WX_SECRET, WX_MCH_ID, WX_SERIAL_NO, WX_API_KEY } = process.env;
 const wxConfig = {
   appid: WX_APPID, // 服务号的appid
-  secret: WX_SECRET,  // 服务号的秘钥
-  mchid: WX_MCH_ID,  // 商户号
+  secret: WX_SECRET, // 服务号的秘钥
+  mchid: WX_MCH_ID, // 商户号
   apiV3Key: WX_API_KEY,
   serial_no: WX_SERIAL_NO, //商户API证书序列号
   // publicKey: fs.readFileSync('~/server/cert/apiclient_cert.pem').toString(),
@@ -29,7 +27,6 @@ class WeixinApiUtil {
     this.appId = wxConfig.appid;
     this.appSecret = wxConfig.secret;
 
-    this.QR_CODE_URL_PREFIX = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=';
     this.ACCESS_TOKEN = null;
     this.ACCESS_TOKEN_EXPIRE_TIME = null;
     this.QR_CODE_TICKET_TIMEOUT = 10 * 60; // QR code ticket timeout (in seconds)
@@ -57,7 +54,7 @@ class WeixinApiUtil {
    * @returns
    */
   async getWeixinUser(access_token, openid) {
-    const token = access_token || await this.getAccessToken();
+    const token = access_token || (await this.getAccessToken());
     const url = `https://api.weixin.qq.com/sns/userinfo?access_token=${token}&openid=${openid}&lang=zh_CN`;
 
     try {
@@ -77,13 +74,13 @@ class WeixinApiUtil {
     if (this.ACCESS_TOKEN && moment().isBefore(this.ACCESS_TOKEN_EXPIRE_TIME)) {
       return this.ACCESS_TOKEN;
     }
-    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${this.appId}&secret=${this.appSecret}`;
+    const appId = this.appId || 'wx74c42da7684bde66';
+    const appSecret = this.appSecret || '37e105863e93aef07df1c6482adab1af';
+    const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
     try {
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
       const data = await response.json();
+      console.log('请求token', data);
       this.ACCESS_TOKEN = data.access_token;
       this.ACCESS_TOKEN_EXPIRE_TIME = moment().add(data.expires_in - 10, 'seconds'); // 预留10秒过期
       return this.ACCESS_TOKEN;
@@ -120,7 +117,9 @@ class WeixinApiUtil {
       const data = await response.json();
       const weixinQrCode = {
         code: data.ticket,
-        url: `${this.QR_CODE_URL_PREFIX}${encodeURIComponent(data.ticket)}`,
+        url: `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${encodeURIComponent(
+          data.ticket,
+        )}`,
       };
       return weixinQrCode;
     }
@@ -132,9 +131,9 @@ class WeixinApiUtil {
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify({
-        'type': type,
-        'offset': 0,
-        'count': 20,
+        type: type,
+        offset: 0,
+        count: 20,
       }),
     });
     return await response.json();
@@ -148,6 +147,49 @@ class WeixinApiUtil {
     });
     if (response.status === 200) {
       return response.body;
+    }
+    return;
+  }
+
+  async createCustomMenus() {
+    const accessToken = await this.getAccessToken();
+    // 菜单需要先删除，再创建
+    const deleteUrl = ` https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=${accessToken}`;
+    await fetch(deleteUrl, {
+      method: 'GET',
+    });
+    const createUrl = ` https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${accessToken}`;
+    const response = await fetch(createUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        button: [
+          {
+            name: '角色切换',
+            sub_button: [
+              {
+                type: 'click',
+                name: '教师',
+                key: 'techer',
+              },
+              {
+                type: 'click',
+                name: '导游',
+                key: 'guide',
+              },
+              {
+                type: 'click',
+                name: '算命先生',
+                key: 'destiny',
+              },
+            ],
+          },
+        ],
+      }),
+    });
+    if (response.status === 200) {
+      const data = await response.json();
+      console.log('创建完成', data);
+      return data;
     }
     return;
   }
