@@ -83,6 +83,16 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
     return handleNormalMsg(user, receiveMessage, weixinApiUtil);
+  } else if (WeixinMsgUtil.isMenuClickEvent(receiveMessage)) {
+    const eventKey = receiveMessage.eventKey;
+    console.log('点击事件切换角色', eventKey);
+    // if (eventKey === 'TECHER') {
+
+    // } else if (eventKey === '我是算命先生') {
+
+    // } else if (eventKey === 'TURIST') {
+
+    // }
   }
 };
 

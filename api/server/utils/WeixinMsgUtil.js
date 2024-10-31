@@ -1,6 +1,7 @@
 class WeixinMsgUtil {
   // 事件-关注
   static EVENT_SUBSCRIBE = 'subscribe';
+  static EVENT_CLICK = 'CLICK';
 
   /**
    * 微信消息转对象
@@ -21,6 +22,7 @@ class WeixinMsgUtil {
     receiveMessage.ticket = jsonObject.ticket?.[0] || '';
     receiveMessage.picUrl = jsonObject.picurl?.[0] || '';
     receiveMessage.mediaId = jsonObject.mediaid?.[0] || '';
+    receiveMessage.eventKey = jsonObject.eventkey?.[0] || '';
     return receiveMessage;
   }
 
@@ -70,6 +72,16 @@ class WeixinMsgUtil {
       // 'link',
     ].includes(receiveMessage.msgType);
   }
+
+  /**
+   * 是否是菜单栏点击事件
+   *
+   * @param {ReceiveMessage} receiveMessage
+   * @return {boolean}
+   */
+  static isMenuClickEvent(receiveMessage) {
+    return receiveMessage.msgType === 'event' && receiveMessage.event === WeixinMsgUtil.EVENT_CLICK;
+  }
 }
 
 class ReceiveMessage {
@@ -81,6 +93,7 @@ class ReceiveMessage {
     this.content = '';
     this.msgId = '';
     this.event = '';
+    this.eventKey = '';
     this.ticket = '';
     this.picUrl = '';
     this.mediaId = '';
