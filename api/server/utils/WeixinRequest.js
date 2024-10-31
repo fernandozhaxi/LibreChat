@@ -196,6 +196,7 @@ class Request {
         let lastMsg = msgList[msgList.length - 1];
         lastMsg = lastMsg.replace('data: ', '');
         lastMsg = JSON.parse(lastMsg);
+        console.log('lastMsg', lastMsg);
         let final_response = lastMsg.responseMessage;
         if (final_response.error) {
           return false;
@@ -247,7 +248,7 @@ class Request {
       response = await this.libreChatAPI.uploadImage(this.getHeaders(true), buffer, fileName);
     }
     if (response.status === 200) {
-      const fileData = response.json();
+      const fileData = await response.json();
       const conversationData = conversationManager.getConversationData(this.openId);
 
       if (!conversationData.files) {

@@ -705,7 +705,6 @@ function filterFile({ req, file, image }) {
     throw new Error('No file_id provided');
   }
 
-  console.log('收到的文件', file);
   if (file.size === 0) {
     throw new Error('Empty file uploaded');
   }

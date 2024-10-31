@@ -31,7 +31,6 @@ const { updateFile } = require('~/models/File');
  */
 async function uploadLocalImage({ req, file, file_id, endpoint, resolution = 'high' }) {
   const inputFilePath = file.path;
-  console.log('inputFilePath', inputFilePath);
   const inputBuffer = await fs.promises.readFile(inputFilePath);
   const {
     buffer: resizedBuffer,
