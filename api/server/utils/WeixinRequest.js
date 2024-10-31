@@ -1,5 +1,4 @@
 const uuid = require('uuid');
-const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
@@ -7,7 +6,7 @@ const _formData = require('./formData');
 
 // const base_url = 'https://www.cdyz.top';
 // const base_url = 'https://1ce6374ed662.vicp.fun';
-const base_url = 'http://localhost:3080';
+const base_url = 'http://127.0.0.1:3080';
 
 class LibreChatAPI {
   constructor() {
@@ -32,8 +31,8 @@ class LibreChatAPI {
   async refreshToken(accessToken, refreshToken) {
     const url = `${base_url}${this.refreshApi}`;
     const headers = {
-      'Authorization': `Bearer ${accessToken}`,
-      'Cookie': `refreshToken=${refreshToken}`,
+      Authorization: `Bearer ${accessToken}`,
+      Cookie: `refreshToken=${refreshToken}`,
     };
     return await fetch(url, {
       method: 'POST',
@@ -50,30 +49,31 @@ class LibreChatAPI {
     });
   }
 
-  async getFormData(headers, buffer, fileName) {
-
+  async getFormData(headers, tempPath, fileName) {
     function setHeader(headers, name, value, keepExisting = false) {
-      const existing = Object.entries(headers).find(pair => pair[0].toLowerCase() === name.toLowerCase());
-      if (!existing) { headers[name] = value; } else if (!keepExisting) { headers[existing[0]] = value; }
+      const existing = Object.entries(headers).find(
+        (pair) => pair[0].toLowerCase() === name.toLowerCase(),
+      );
+      if (!existing) {
+        headers[name] = value;
+      } else if (!keepExisting) {
+        headers[existing[0]] = value;
+      }
     }
 
     const formData = new _formData.MultipartFormData();
+    formData.addFileField('file', fileName, fs.createReadStream(tempPath));
     formData.addField('width', '100');
     formData.addField('height', '100');
     formData.addField('endpoint', 'openAI');
     formData.addField('file_id', String(uuid.v4()));
-    formData.addFileField('file', buffer, fileName);
     setHeader(headers, 'content-type', formData.contentTypeHeader(), true);
     return formData.finish();
-  };
+  }
 
-  async uploadImage(headers, buffer, fileName) {
-    console.log(typeof buffer);
-    console.log(buffer);
+  async uploadImage(headers, tempPath, fileName) {
     const url = `${base_url}${this.imageApi}`;
-    const formData = this.getFormData(headers, buffer, fileName);
-    console.log('formData', formData);
-    console.log('headers', headers);
+    const formData = this.getFormData(headers, tempPath, fileName);
     return await fetch(url, {
       method: 'POST',
       headers,
@@ -107,7 +107,10 @@ class Request {
       const data = await response.json();
       this.accessToken = data.token;
       const cookie = response.headers.get('set-cookie');
-      this.refreshToken = cookie.split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
+      this.refreshToken = cookie
+        .split(';')
+        .find((cookie) => cookie.trim().startsWith('refreshToken'))
+        .split('=')[1];
       return this.accessToken;
     } catch (error) {
       console.error('Login error:', error);
@@ -126,7 +129,10 @@ class Request {
       if (response.status === 200) {
         this.accessToken = data.token;
         const cookie = response.headers.get('set-cookie');
-        this.refreshToken = cookie.split(';').find(cookie => cookie.trim().startsWith('refreshToken')).split('=')[1];
+        this.refreshToken = cookie
+          .split(';')
+          .find((cookie) => cookie.trim().startsWith('refreshToken'))
+          .split('=')[1];
       } else {
         await this._login(email, password);
       }
@@ -138,15 +144,14 @@ class Request {
 
   getHeaders(isUpload) {
     const headers = {
-      'Authorization': `Bearer ${this.accessToken}`,
-      'Origin': base_url,
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+      Authorization: `Bearer ${this.accessToken}`,
+      Origin: base_url,
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
     };
 
     if (isUpload) {
-      const boundary = '----WebKitFormBoundary' + crypto.randomBytes(8).toString('hex');
-      headers['Content-Type'] = `multipart/form-data; boundary=${boundary}`;
-      headers['Boundary'] = boundary;
+      headers['Content-Type'] = 'multipart/form-data';
     } else {
       headers['Content-Type'] = 'application/json';
     }
@@ -210,50 +215,46 @@ class Request {
     return final_response.text;
   }
 
-  async uploadImage(user, url, conversationManager) {
-    const fileName = path.basename(url); // 从 URL 中提取文件名
-    console.log('上传图片文件', url, fileName);
-    const imageData = await fetch(url);
-    const arrayBuffer = await imageData.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const buffer = Buffer.from(arrayBuffer);
-    let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), uint8Array, fileName);
+  async uploadImage(user, picUrl, conversationManager) {
+    const fileName = path.basename(picUrl);
+    const downRes = await fetch(picUrl);
+    const buffer = await downRes.buffer();
+    const tempPath = path.join(__dirname, fileName);
+    fs.writeFileSync(tempPath, buffer);
+    let response = await this.libreChatAPI.uploadImage(this.getHeaders(true), tempPath, fileName);
     console.log('第一次上传文件', response.status);
     if (response.status === 401) {
       await this._refreshToken();
-      response = await this.libreChatAPI.uploadImage(this.getHeaders(true), uint8Array, fileName);
+      response = await this.libreChatAPI.uploadImage(this.getHeaders(true), tempPath, fileName);
       console.log('再次上传文件');
     }
-    // const json = await response.json();
-    // console.log(response, json);
-
     console.log(response.status);
+    if (response.status === 200) {
+      fs.unlinkSync(tempPath);
+      const fileData = response.data;
+      const conversationData = conversationManager.getConversationData(this.openId);
 
-    // if (response.status === 200) {
-    //   const fileData = response.data;
-    //   const conversationData = conversationManager.getConversationData(this.openId);
+      if (!conversationData.files) {
+        conversationData.files = [];
+      }
 
-    //   if (!conversationData.files) {
-    //     conversationData.files = [];
-    //   }
+      const files = conversationData.files;
+      files.push({
+        file_id: fileData.file_id,
+        filepath: fileData.filepath,
+        height: fileData.height,
+        width: fileData.width,
+        type: fileData.type,
+      });
 
-    //   const files = conversationData.files;
-    //   files.push({
-    //     file_id: fileData.file_id,
-    //     filepath: fileData.filepath,
-    //     height: fileData.height,
-    //     width: fileData.width,
-    //     type: fileData.type,
-    //   });
+      conversationManager.updateConversationData(this.openId, {
+        files: files,
+      });
 
-    //   conversationManager.updateConversationData(this.openId, {
-    //     files: files,
-    //   });
-
-    //   return true;
-    // } else {
-    //   return false;
-    // }
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
