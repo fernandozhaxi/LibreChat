@@ -191,7 +191,7 @@ const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
   logger.info(
     mediaId,
   );
-  const imageInfo = await weixinApiUtil.getAssets(mediaId);
+  const imageInfo = await weixinApiUtil.getTempAssets(mediaId);
   logger.info(
     'get temp assets:' + JSON.stringify(imageInfo),
   );
