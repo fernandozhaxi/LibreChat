@@ -181,6 +181,11 @@ class WeixinApiUtil {
                 name: '算命先生',
                 key: 'destiny',
               },
+              {
+                type: 'click',
+                name: '客服',
+                key: 'customer',
+              },
             ],
           },
         ],

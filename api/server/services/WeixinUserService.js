@@ -142,6 +142,9 @@ const handleMenueClickEvent = async (user, receiveMessage, weixinApiUtil) => {
     case 'guide':
       content = '请你扮演资深导游与我对话';
       break;
+    case 'customer':
+      content = '请你扮演客服与我对话';
+      break;
   }
   receiveMessage.content = content;
   return handleNormalTextMsg(receiveMessage, weixinApiUtil);
