@@ -66,10 +66,10 @@ class WeixinMsgUtil {
       'text',
       'image',
       'voice',
-      // 'video',
-      // 'shortvideo',
-      // 'location',
-      // 'link',
+      'video',
+      'shortvideo',
+      'location',
+      'link',
     ].includes(receiveMessage.msgType);
   }
 
@@ -116,6 +116,15 @@ class ReceiveMessage {
       ']]></Content>\n' +
       '     </xml>';
     return xml;
+  }
+  getReplyTextJsonMsg(content) {
+    return {
+      touser: this.fromUserName,
+      msgtype: 'text',
+      text: {
+        content: content,
+      },
+    };
   }
   getReplyImageMsg(mediaId) {
     const xml =

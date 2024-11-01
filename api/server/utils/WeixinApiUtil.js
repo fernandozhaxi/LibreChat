@@ -199,6 +199,16 @@ class WeixinApiUtil {
     return;
   }
 
+  async sendCustomerMsg(msg) {
+    const accessToken = await this.getAccessToken();
+    const url = `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${accessToken}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(msg),
+    });
+    console.log(response);
+  };
+
   /**
    * PC端微信支付: Native支付
    */

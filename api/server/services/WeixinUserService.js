@@ -105,6 +105,7 @@ const handleScanLogin = (receiveMessage) => {
 const handleSubscribeEvent = async (receiveMessage) => {
   return receiveMessage.getReplyTextMsg('欢迎关注！');
 };
+
 /**
  *
  * @param {ReceiveMessage} receiveMessage
@@ -112,16 +113,57 @@ const handleSubscribeEvent = async (receiveMessage) => {
  */
 const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
   const type = receiveMessage.msgType;
-  if (type === 'text') {
-    return handleNormalTextMsg(receiveMessage, weixinApiUtil);
-  }
-  if (type === 'image') {
-    return await handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
-  }
-  if (type === 'voice') {
-    return handleNormalVoiceMsg(receiveMessage, weixinApiUtil);
+  // 判断会员情况
+  const openid = receiveMessage.fromUserName;
+  if (['text', 'image', 'voice'].includes(type)) {
+    const user = await User.findOne({ wxOpenId: openid }).lean();
+    const vip = await Vip.findOne({ user: user.id || user._id })
+      .select('goodsName goodsId goodsLevel expiredTime')
+      .lean();
+    const currentTime = new Date();
+    if (vip && currentTime <= new Date(vip.expiredTime)) {
+      if (receiveMessage.content === '结束对话') {
+        weixinConversationManager.deleteConversationData(openid);
+        return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
+      }
+      customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
+      // 这里直接返回success字符串，然后真正的回复交给客服接口
+      return 'success';
+    } else {
+      return vip ?
+        await handleVipExpired(receiveMessage, weixinApiUtil) :
+        await handleVipNotActive(receiveMessage, weixinApiUtil);
+    }
   }
   return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片、语音消息。');
+};
+
+const handleVipExpired = async (receiveMessage, weixinApiUtil) => {
+  const list = await weixinApiUtil.getAssets();
+  const image = list.item.find((i) => i.name.includes('continue'));
+  return image ? receiveMessage.getReplyImageMsg(image.media_id) : receiveMessage.getReplyTextMsg('请联系客服续费会员');
+};
+
+const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
+  const list = await weixinApiUtil.getAssets();
+  const image = list.item.find((i) => i.name.includes('open'));
+  console.log(image);
+  return image ? receiveMessage.getReplyImageMsg(image.media_id) : receiveMessage.getReplyTextMsg('请联系客服开通会员');
+};
+
+// 让客服接口回复消息，避免5秒超时
+const customerHandleMsg = (type, user, receiveMessage, weixinApiUtil) => {
+  setTimeout(() => {
+    if (type === 'text') {
+      handleNormalTextMsg(receiveMessage, weixinApiUtil);
+    }
+    if (type === 'image') {
+      handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
+    }
+    if (type === 'voice') {
+      handleNormalVoiceMsg(receiveMessage, weixinApiUtil);
+    }
+  }, 0);
 };
 
 /**
@@ -147,7 +189,8 @@ const handleMenueClickEvent = async (user, receiveMessage, weixinApiUtil) => {
       break;
   }
   receiveMessage.content = content;
-  return handleNormalTextMsg(receiveMessage, weixinApiUtil);
+  customerHandleMsg('text', user, receiveMessage, weixinApiUtil);
+  return 'success';
 };
 
 /**
@@ -157,39 +200,16 @@ const handleMenueClickEvent = async (user, receiveMessage, weixinApiUtil) => {
  */
 const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
-  const user = await User.findOne({ wxOpenId: openid }).lean();
-  const vip = await Vip.findOne({ user: user.id || user._id })
-    .select('goodsName goodsId goodsLevel expiredTime')
-    .lean();
-  if (vip) {
-    const currentTime = new Date();
-    const expiredTime = new Date(vip.expiredTime);
-    if (currentTime > expiredTime) {
-      const list = await weixinApiUtil.getAssets();
-      const image = list.item.find((i) => i.name.includes('continue'));
-      if (image) {
-        return receiveMessage.getReplyImageMsg(image.media_id);
-      }
-      return receiveMessage.getReplyTextMsg('请联系客服续费会员');
-    } else {
-      const content = receiveMessage.content;
-      if (content === '结束对话') {
-        weixinConversationManager.deleteConversationData(openid);
-        return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
-      }
-      const result = await askAiText(content, openid);
-      if (result) {
-        return receiveMessage.getReplyTextMsg(result);
-      }
-      return receiveMessage.getReplyTextMsg('服务器发生了错误，请重试。');
-    }
+  const content = receiveMessage.content;
+  const result = await askAiText(content, openid);
+  let msg = '';
+  if (result) {
+    msg = receiveMessage.getReplyTextJsonMsg(result);
+  } else {
+    msg = receiveMessage.getReplyTextJsonMsg('服务器发生了错误，请重试。');
   }
-  const list = await weixinApiUtil.getAssets();
-  const image = list.item.find((i) => i.name.includes('open'));
-  if (image) {
-    return receiveMessage.getReplyImageMsg(image.media_id);
-  }
-  return receiveMessage.getReplyTextMsg('请联系客服开通会员');
+
+  weixinApiUtil.sendCustomerMsg(msg);
 };
 
 const askAiText = async (text, openid) => {
@@ -202,21 +222,18 @@ const askAiText = async (text, openid) => {
  * @param {ReceiveMessage} receiveMessage
  * @returns template msg
  */
-const handleNormalImageMsg = async (user, receiveMessage) => {
+const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
   const openid = receiveMessage.fromUserName;
   const { picUrl } = receiveMessage;
-  // const url = await weixinApiUtil.getTempAssets(mediaId);
-  try {
-    const request = new WeixinRequest(openid, weixinTokenManager);
-    const success = await request.uploadImage(user, picUrl, weixinConversationManager);
-    if (success) {
-      return receiveMessage.getReplyTextMsg('您发了一张图片，需要我做什么？');
-    }
-    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
-  } catch (error) {
-    console.log(error);
-    return receiveMessage.getReplyTextMsg('图片消息接收失败，请重试');
+  const request = new WeixinRequest(openid, weixinTokenManager);
+  const success = await request.uploadImage(user, picUrl, weixinConversationManager);
+  let msg = '';
+  if (success) {
+    msg = receiveMessage.getReplyTextJsonMsg('您发了一张图片，需要我做什么？');
+  } else {
+    msg = receiveMessage.getReplyTextJsonMsg('图片消息接收失败，请重试');
   }
+  weixinApiUtil.sendCustomerMsg(msg);
 };
 
 /**
