@@ -149,7 +149,6 @@ const handleVipExpired = async (receiveMessage, weixinApiUtil) => {
 const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
   const list = await weixinApiUtil.getAssets();
   const image = list.item.find((i) => i.name.includes('open'));
-  console.log(image);
   return image
     ? receiveMessage.getReplyImageMsg(image.media_id)
     : receiveMessage.getReplyTextMsg('请联系客服开通会员');

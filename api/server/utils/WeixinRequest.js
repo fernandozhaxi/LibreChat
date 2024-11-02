@@ -167,7 +167,7 @@ class Request {
       key: 'never',
       files: conversationData.files || [],
       messageId: uuid.v4(),
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       overrideParentMessageId: null,
       parentMessageId: conversationData.messageId,
       responseMessageId: conversationData.messageId,
