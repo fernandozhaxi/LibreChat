@@ -130,9 +130,9 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
       // 这里直接返回success字符串，然后真正的回复交给客服接口
       return 'success';
     } else {
-      return vip ?
-        await handleVipExpired(receiveMessage, weixinApiUtil) :
-        await handleVipNotActive(receiveMessage, weixinApiUtil);
+      return vip
+        ? await handleVipExpired(receiveMessage, weixinApiUtil)
+        : await handleVipNotActive(receiveMessage, weixinApiUtil);
     }
   }
   return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片、语音消息。');
@@ -141,14 +141,18 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
 const handleVipExpired = async (receiveMessage, weixinApiUtil) => {
   const list = await weixinApiUtil.getAssets();
   const image = list.item.find((i) => i.name.includes('continue'));
-  return image ? receiveMessage.getReplyImageMsg(image.media_id) : receiveMessage.getReplyTextMsg('请联系客服续费会员');
+  return image
+    ? receiveMessage.getReplyImageMsg(image.media_id)
+    : receiveMessage.getReplyTextMsg('请联系客服续费会员');
 };
 
 const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
   const list = await weixinApiUtil.getAssets();
   const image = list.item.find((i) => i.name.includes('open'));
   console.log(image);
-  return image ? receiveMessage.getReplyImageMsg(image.media_id) : receiveMessage.getReplyTextMsg('请联系客服开通会员');
+  return image
+    ? receiveMessage.getReplyImageMsg(image.media_id)
+    : receiveMessage.getReplyTextMsg('请联系客服开通会员');
 };
 
 // 让客服接口回复消息，避免5秒超时

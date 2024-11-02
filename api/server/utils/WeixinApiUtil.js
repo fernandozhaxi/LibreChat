@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
+const { logger } = require('~/config');
 // const WxPay = require('wechatpay-node-v3');
 // const Goods = require('~/models/Goods');
 
@@ -193,7 +194,6 @@ class WeixinApiUtil {
     });
     if (response.status === 200) {
       const data = await response.json();
-      console.log('创建完成', data);
       return data;
     }
     return;
@@ -207,7 +207,8 @@ class WeixinApiUtil {
       body: JSON.stringify(msg),
     });
     console.log(response);
-  };
+    logger.info('[Customer send:]: ' + JSON.stringify(response));
+  }
 
   /**
    * PC端微信支付: Native支付
