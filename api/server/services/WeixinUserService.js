@@ -165,11 +165,11 @@ const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
 const customerHandleMsg = (type, user, receiveMessage, weixinApiUtil) => {
   setTimeout(() => {
     if (type === 'text') {
-      const file = fs.createReadStream(path.join(__dirname, 'uploads', '123.mp3'));
-      weixinApiUtil.addvoicetorecofortext(file).then(res => {
-        console.log('识别结果', res);
-      });
-      // handleNormalTextMsg(receiveMessage, weixinApiUtil);
+      // const file = fs.createReadStream(path.join(__dirname, 'uploads', '123.mp3'));
+      // weixinApiUtil.addvoicetorecofortext(file).then(res => {
+      //   console.log('识别结果', res);
+      // });
+      handleNormalTextMsg(receiveMessage, weixinApiUtil);
     }
     if (type === 'image') {
       handleNormalImageMsg(user, receiveMessage, weixinApiUtil);
