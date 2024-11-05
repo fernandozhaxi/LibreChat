@@ -224,7 +224,7 @@ class WeixinApiUtil {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
-      }, 5000);
+      }, 3000);
     });
   }
 
@@ -245,13 +245,17 @@ class WeixinApiUtil {
     });
     console.log(response);
     if (response.status === 200) {
-      await this.sleep();
+      // await this.sleep();
       // 获取识别结果
       const resultReponse = await fetch(getResultUrl, {
         method: 'POST',
       });
+
+      console.log(resultReponse);
       if (resultReponse.status == 200) {
         const data = await resultReponse.json();
+        console.log(data);
+        logger.info('[Audio reco:]: ' + JSON.stringify(data));
         return data.result;
       }
     }
