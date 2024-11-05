@@ -189,6 +189,16 @@ class WeixinApiUtil {
               },
             ],
           },
+          {
+            name: '需要帮助',
+            sub_button: [
+              {
+                type: 'click',
+                name: '使用指南',
+                key: 'use',
+              },
+            ],
+          },
         ],
       }),
     });
@@ -208,6 +218,44 @@ class WeixinApiUtil {
     });
     console.log(response);
     logger.info('[Customer send:]: ' + JSON.stringify(response));
+  }
+
+  sleep() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 5000);
+    });
+  }
+
+  async addvoicetorecofortext(file) {
+    const accessToken = await this.getAccessToken();
+    const voiceId = uuidv4();
+    const uploadUrl = `https://api.weixin.qq.com/cgi-bin/media/voice/addvoicetorecofortext?access_token=${accessToken}&format=mp3&voice_id=${voiceId}&lang=zh_CN`;
+    const getResultUrl = `https://api.weixin.qq.com/cgi-bin/media/voice/queryrecoresultfortext?access_token=${accessToken}&voice_id=${voiceId}`;
+    const form = new FormData();
+    form.append('file', file);
+    // 上传音频文件
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: form,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log(response);
+    if (response.status === 200) {
+      await this.sleep();
+      // 获取识别结果
+      const resultReponse = await fetch(getResultUrl, {
+        method: 'POST',
+      });
+      if (resultReponse.status == 200) {
+        const data = await resultReponse.json();
+        return data.result;
+      }
+    }
+    return '';
   }
 
   /**

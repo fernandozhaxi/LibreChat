@@ -2,6 +2,9 @@ const crypto = require('crypto');
 const User = require('~/models/User');
 const Vip = require('~/models/Vip');
 const bcrypt = require('bcryptjs');
+const path = require('path');
+const fs = require('fs-extra');
+const { v4: uuidv4 } = require('uuid');
 const Balance = require('~/models/Balance');
 const WeixinMsgUtil = require('~/server/utils/WeixinMsgUtil');
 const WeixinRequest = require('~/server/utils/WeixinRequest');
@@ -9,6 +12,10 @@ const WeixinTokenManager = require('~/server/utils/WeixinTokenManager');
 const WeixinConversationManager = require('~/server/utils/WeixinConversationManager');
 const WeixinQrCodeCacheUtil = require('~/server/utils/WeixinQrCodeCacheUtil');
 const { logger } = require('~/config');
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 /**
  * @param {string} signature
  * @param {string} timestamp
@@ -158,6 +165,10 @@ const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
 const customerHandleMsg = (type, user, receiveMessage, weixinApiUtil) => {
   setTimeout(() => {
     if (type === 'text') {
+      // const file = fs.createReadStream(path.join(__dirname, 'uploads', `${123}.mp3`));
+      // weixinApiUtil.addvoicetorecofortext(file).then(res => {
+      //   console.log('result', res);
+      // });
       handleNormalTextMsg(receiveMessage, weixinApiUtil);
     }
     if (type === 'image') {
@@ -245,15 +256,40 @@ const handleNormalImageMsg = async (user, receiveMessage, weixinApiUtil) => {
  * @returns template msg
  */
 const handleNormalVoiceMsg = async (receiveMessage, weixinApiUtil) => {
-  // const openid = receiveMessage.fromUserName;
   const { mediaId } = receiveMessage;
-  const voiceInfo = await weixinApiUtil.getTempAssets(mediaId);
-  logger.info('get temp assets:' + JSON.stringify(voiceInfo));
-  // 调用API将语音转换为文本
-
-  // 用文本调用ask请求
-  return receiveMessage.getReplyTextMsg('语音消息');
+  const response = await weixinApiUtil.getTempAssets(mediaId);
+  // 指定临时文件路径
+  const uniqueId = uuidv4();
+  fs.ensureDirSync(path.join(__dirname, 'uploads'));
+  const armFilePath = path.join(__dirname, 'uploads', `${uniqueId}.temp`);
+  const mp3FilePath = path.join(__dirname, 'uploads', `${uniqueId}.mp3`);
+  const dest = fs.createWriteStream(armFilePath);
+  response.pipe(dest);
+  dest.on('finish', () => {
+    try {
+      // 转换 ARM 文件为 MP3
+      ffmpeg(armFilePath)
+        .toFormat('mp3')
+        .save(mp3FilePath)
+        .on('end', async () => {
+          const file = fs.createReadStream(mp3FilePath);
+          const result = await weixinApiUtil.addvoicetorecofortext(file);
+          fs.unlinkSync(mp3FilePath);
+          fs.unlinkSync(armFilePath);
+          if (result) {
+            receiveMessage.content = result;
+            handleNormalTextMsg(receiveMessage, weixinApiUtil);
+          } else {
+            const msg = receiveMessage.getReplyTextJsonMsg('未能识别您的语音，请重试');
+            weixinApiUtil.sendCustomerMsg(msg);
+          }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  });
 };
+
 module.exports = {
   checkSignature,
   createWeixinUser,

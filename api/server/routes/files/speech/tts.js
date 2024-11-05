@@ -17,6 +17,7 @@ const logDebugMessage = (req, message) =>
 
 // TODO: test caching
 router.post('/', async (req, res) => {
+  console.log('text to speech', req);
   try {
     const audioRunsCache = getLogStores(CacheKeys.AUDIO_RUNS);
     const audioRun = await audioRunsCache.get(req.body.runId);

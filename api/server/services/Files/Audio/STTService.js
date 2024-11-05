@@ -200,6 +200,7 @@ class STTService {
    * @returns {Promise<void>}
    */
   async processTextToSpeech(req, res) {
+    console.log('processTextToSpeech');
     if (!req.file || !req.file.buffer) {
       return res.status(400).json({ message: 'No audio file provided in the FormData' });
     }
@@ -211,6 +212,8 @@ class STTService {
       size: req.file.size,
     };
 
+    console.log('audioFile');
+    console.log(audioFile);
     try {
       const [provider, sttSchema] = await this.getProviderSchema();
       const text = await this.sttRequest(provider, sttSchema, { audioBuffer, audioFile });
