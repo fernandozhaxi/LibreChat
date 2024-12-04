@@ -137,19 +137,19 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
       // 这里直接返回success字符串，然后真正的回复交给客服接口
       return 'success';
     } else {
+      const balance = await Balance.findOne({ user: user.id || user._id });
+      if (balance) {
+        const tokenCredits = balance?.tokenCredits;
+        if (tokenCredits > 0) {
+          customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
+          // 这里直接返回success字符串，然后真正的回复交给客服接口
+          return 'success';
+        }
+      }
+
       if (vip) {
         return await handleVipExpired(receiveMessage, weixinApiUtil);
       } else {
-        const balance = await Balance.findOne({ user: user.id || user._id });
-        if (balance) {
-          const tokenCredits = balance?.tokenCredits;
-          if (tokenCredits > 0) {
-            customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
-            // 这里直接返回success字符串，然后真正的回复交给客服接口
-            return 'success';
-          }
-        }
-        // 没有会员，检查是否有积分余额
         return await handleVipNotActive(receiveMessage, weixinApiUtil);
       }
     }
@@ -162,7 +162,7 @@ const handleVipExpired = async (receiveMessage, weixinApiUtil) => {
   const image = list.item.find((i) => i.name.includes('continue'));
   return image
     ? receiveMessage.getReplyImageMsg(image.media_id)
-    : receiveMessage.getReplyTextMsg('请联系客服续费会员');
+    : receiveMessage.getReplyTextMsg('请联系客服续费会员或充值积分！');
 };
 
 const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
