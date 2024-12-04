@@ -128,21 +128,33 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
       .select('goodsName goodsId goodsLevel expiredTime')
       .lean();
     const currentTime = new Date();
+    if (receiveMessage.content === '结束对话') {
+      weixinConversationManager.deleteConversationData(openid);
+      return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
+    }
     if (vip && currentTime <= new Date(vip.expiredTime)) {
-      if (receiveMessage.content === '结束对话') {
-        weixinConversationManager.deleteConversationData(openid);
-        return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
-      }
       customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
       // 这里直接返回success字符串，然后真正的回复交给客服接口
       return 'success';
     } else {
-      return vip
-        ? await handleVipExpired(receiveMessage, weixinApiUtil)
-        : await handleVipNotActive(receiveMessage, weixinApiUtil);
+      if (vip) {
+        return await handleVipExpired(receiveMessage, weixinApiUtil);
+      } else {
+        const balance = await Balance.findOne({ user: user.id || user._id });
+        if (balance) {
+          const tokenCredits = balance?.tokenCredits;
+          if (tokenCredits > 0) {
+            customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
+            // 这里直接返回success字符串，然后真正的回复交给客服接口
+            return 'success';
+          }
+        }
+        // 没有会员，检查是否有积分余额
+        return await handleVipNotActive(receiveMessage, weixinApiUtil);
+      }
     }
   }
-  return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片、语音消息。');
+  return receiveMessage.getReplyTextMsg('目前我只能处理文本、图片消息。');
 };
 
 const handleVipExpired = async (receiveMessage, weixinApiUtil) => {
@@ -158,7 +170,7 @@ const handleVipNotActive = async (receiveMessage, weixinApiUtil) => {
   const image = list.item.find((i) => i.name.includes('open'));
   return image
     ? receiveMessage.getReplyImageMsg(image.media_id)
-    : receiveMessage.getReplyTextMsg('请联系客服开通会员');
+    : receiveMessage.getReplyTextMsg('请联系客服开通会员或充值积分！');
 };
 
 // 让客服接口回复消息，避免5秒超时
