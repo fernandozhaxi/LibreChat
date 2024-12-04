@@ -60,6 +60,27 @@ const createWeixinUser = async (openid, nickname, avatar) => {
   return user;
 };
 
+/**
+ * @param {string} openid
+ * @param {string} nickname
+ * @param {string} avatar
+ */
+const updateWeixinUser = async (openid, nickname, avatar) => {
+  const user = await User.updateOne(
+    {
+      wxOpenId: openid,
+    },
+    {
+      $set: {
+        username: nickname,
+        avatar: avatar,
+      },
+    },
+  );
+  logger.info('[Handle weixin msg update user]: ' + user.username);
+  return user;
+};
+
 const weixinTokenManager = new WeixinTokenManager();
 const weixinConversationManager = new WeixinConversationManager();
 
@@ -71,9 +92,9 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   const { openid } = req.query;
   let user = await User.findOne({ wxOpenId: openid }).lean();
   if (!user) {
-    const user = await weixinApiUtil.getWeixinUser(null, openid);
-    const { nickname, headimgurl } = user;
-    await createWeixinUser(openid, nickname, headimgurl);
+    const u = await weixinApiUtil.getWeixinUser(null, openid);
+    const { nickname, headimgurl } = u;
+    user = await createWeixinUser(openid, nickname, headimgurl);
     logger.info('[Handle weixin msg create new user]: ' + user.nickname);
   }
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
@@ -83,6 +104,12 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
+    // 如果没有昵称，需要重新获取
+    if (!user.username) {
+      const u = await weixinApiUtil.getWeixinUser(null, openid);
+      const { nickname, headimgurl } = u;
+      user = await updateWeixinUser(openid, nickname, headimgurl);
+    }
     return handleNormalMsg(user, receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isMenuClickEvent(receiveMessage)) {
     return handleMenueClickEvent(user, receiveMessage, weixinApiUtil);
