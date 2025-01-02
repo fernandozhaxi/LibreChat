@@ -23,18 +23,22 @@ const getUserById = async function (userId, fieldsToSelect = null) {
 
   if (user) {
     // 查询与该用户对应的 VIP 信息
-    const vip = await Vip.findOne({ user: userId }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    const vip = await Vip.findOne({ user: userId })
+      .select('goodsName goodsId goodsLevel expiredTime')
+      .lean();
     // 查询与该用户对应的积分信息
     const balance = await Balance.findOne({ user: user.id || user._id });
     user = {
       ...user,
-      vip: vip ? {
-        id: vip._id,
-        goodsName: vip.goodsName,
-        goodsId: vip.goodsId,
-        goodsLevel: vip.goodsLevel,
-        expiredTime: vip.expiredTime,
-      } : null,
+      vip: vip
+        ? {
+          id: vip._id,
+          goodsName: vip.goodsName,
+          goodsId: vip.goodsId,
+          goodsLevel: vip.goodsLevel,
+          expiredTime: vip.expiredTime,
+        }
+        : null,
       balance: balance?.tokenCredits || 0,
     };
   }
@@ -57,18 +61,22 @@ const findUser = async function (searchCriteria, fieldsToSelect = null) {
 
   if (user) {
     // 查询与该用户对应的 VIP 信息
-    const vip = await Vip.findOne({ user: user.id || user._id }).select('goodsName goodsId goodsLevel expiredTime').lean();
+    const vip = await Vip.findOne({ user: user.id || user._id })
+      .select('goodsName goodsId goodsLevel expiredTime')
+      .lean();
     // 查询与该用户对应的积分信息
     const balance = await Balance.findOne({ user: user.id || user._id });
     user = {
       ...user,
-      vip: vip ? {
-        id: vip._id,
-        goodsName: vip.goodsName,
-        goodsId: vip.goodsId,
-        goodsLevel: vip.goodsLevel,
-        expiredTime: vip.expiredTime,
-      } : null,
+      vip: vip
+        ? {
+          id: vip._id,
+          goodsName: vip.goodsName,
+          goodsId: vip.goodsId,
+          goodsLevel: vip.goodsLevel,
+          expiredTime: vip.expiredTime,
+        }
+        : null,
       balance: balance?.tokenCredits || 0,
     };
   }
@@ -113,14 +121,14 @@ const createUser = async (data, disableTTL = true, returnUser = false) => {
   }
 
   const user = await User.create(userData);
-  // Set default balance 10000
+  // Set default balance 100000
   await Balance.updateOne(
     {
       user: user._id,
     },
     {
       $set: {
-        tokenCredits: 10000,
+        tokenCredits: 100000,
       },
     },
     { upsert: true },

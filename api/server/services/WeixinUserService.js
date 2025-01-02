@@ -52,7 +52,7 @@ const createWeixinUser = async (openid, nickname, avatar) => {
     },
     {
       $set: {
-        tokenCredits: 10000,
+        tokenCredits: 100000, // 0.1 dollars
       },
     },
     { upsert: true },
@@ -91,12 +91,6 @@ const weixinConversationManager = new WeixinConversationManager();
 const handleWeixinMsg = async (req, weixinApiUtil) => {
   const { openid } = req.query;
   let user = await User.findOne({ wxOpenId: openid }).lean();
-  if (!user) {
-    const u = await weixinApiUtil.getWeixinUser(null, openid);
-    const { nickname, headimgurl } = u;
-    user = await createWeixinUser(openid, nickname, headimgurl);
-    logger.info('[Handle weixin msg create new user]: ' + user.nickname);
-  }
   const receiveMessage = WeixinMsgUtil.msgToReceiveMessage(req);
   // 扫码登录
   if (WeixinMsgUtil.isScanQrCode(receiveMessage)) {
@@ -104,10 +98,17 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
   } else if (WeixinMsgUtil.isEventAndSubscribe(receiveMessage)) {
     return handleSubscribeEvent(receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isNormalMsg(receiveMessage)) {
-    // 如果没有昵称，需要重新获取
-    if (!user.username) {
+    if (!user) {
       const u = await weixinApiUtil.getWeixinUser(null, openid);
       const { nickname, headimgurl } = u;
+      user = await createWeixinUser(openid, nickname, headimgurl);
+      logger.info('[Handle weixin msg create new user]: ' + user.nickname);
+    }
+    // 如果有用户，但是没有昵称，需要重新获取
+    else if (!user.username) {
+      const u = await weixinApiUtil.getWeixinUser(null, openid);
+      const { nickname, headimgurl } = u;
+      logger.info('[Handle update user]: ' + nickname);
       user = await updateWeixinUser(openid, nickname, headimgurl);
     }
     return handleNormalMsg(user, receiveMessage, weixinApiUtil);
@@ -150,15 +151,15 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
   // 判断会员情况
   const openid = receiveMessage.fromUserName;
   if (['text', 'image', 'voice'].includes(type)) {
+    if (receiveMessage.content === '结束对话') {
+      weixinConversationManager.deleteConversationData(openid);
+      return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
+    }
     const user = await User.findOne({ wxOpenId: openid }).lean();
     const vip = await Vip.findOne({ user: user.id || user._id })
       .select('goodsName goodsId goodsLevel expiredTime')
       .lean();
     const currentTime = new Date();
-    if (receiveMessage.content === '结束对话') {
-      weixinConversationManager.deleteConversationData(openid);
-      return receiveMessage.getReplyTextMsg('本次对话已结束！您可以再次发起对话！');
-    }
     if (vip && currentTime <= new Date(vip.expiredTime)) {
       customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
       // 这里直接返回success字符串，然后真正的回复交给客服接口
@@ -167,11 +168,12 @@ const handleNormalMsg = async (user, receiveMessage, weixinApiUtil) => {
       const balance = await Balance.findOne({ user: user.id || user._id });
       if (balance) {
         const tokenCredits = balance?.tokenCredits;
-        if (tokenCredits > 0) {
+        if (tokenCredits > 1000) {
           customerHandleMsg(type, user, receiveMessage, weixinApiUtil);
           // 这里直接返回success字符串，然后真正的回复交给客服接口
           return 'success';
         }
+        return receiveMessage.getReplyTextMsg('积分余额不足，请充值或开通会员后重试！');
       }
 
       if (vip) {
@@ -259,7 +261,7 @@ const handleNormalTextMsg = async (receiveMessage, weixinApiUtil) => {
   if (result) {
     msg = receiveMessage.getReplyTextJsonMsg(result);
   } else {
-    msg = receiveMessage.getReplyTextJsonMsg('服务器发生了错误，请重试。');
+    msg = receiveMessage.getReplyTextJsonMsg('服务器错误，请重试。');
   }
 
   weixinApiUtil.sendCustomerMsg(msg);
