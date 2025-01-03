@@ -55,7 +55,11 @@ class WeixinApiUtil {
    * @returns
    */
   async getWeixinUser(access_token, openid) {
-    const token = access_token || (await this.getAccessToken());
+    let token = access_token;
+    if (!token) {
+      token = await this.getAccessToken();
+      logger.info('重新获取token: ' + token);
+    }
     const url = `https://api.weixin.qq.com/sns/userinfo?access_token=${token}&openid=${openid}&lang=zh_CN`;
 
     try {
@@ -63,9 +67,13 @@ class WeixinApiUtil {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      console.log('获取微信用户', data);
-      return data;
+      logger.info(response);
+      if (response.errcode === 0) {
+        const data = await response.json();
+        console.log('获取微信用户', data);
+        return data;
+      }
+      return null;
     } catch (error) {
       console.error('Error fetching Weixin user info:', error);
       throw error;
@@ -80,10 +88,12 @@ class WeixinApiUtil {
     const appSecret = this.appSecret || '37e105863e93aef07df1c6482adab1af';
     const url = `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appId}&secret=${appSecret}`;
     try {
+      logger.info('[get access token send:]: ' + url);
       const response = await fetch(url);
       const data = await response.json();
+      logger.info('data: ' + JSON.stringify(data));
       this.ACCESS_TOKEN = data.access_token;
-      this.ACCESS_TOKEN_EXPIRE_TIME = moment().add(data.expires_in - 10, 'seconds'); // 预留10秒过期
+      this.ACCESS_TOKEN_EXPIRE_TIME = moment().add(data.expires_in - 1000, 'seconds'); // 预留10秒过期
       return this.ACCESS_TOKEN;
     } catch (error) {
       throw new Error('HTTP error! ');

@@ -107,10 +107,12 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
     // 如果有用户，但是没有昵称，需要重新获取
     else if (!user.username) {
       const u = await weixinApiUtil.getWeixinUser(null, openid);
-      const { nickname, headimgurl } = u;
-      logger.info(u);
-      logger.info('[Handle update user]: ' + nickname);
-      user = await updateWeixinUser(openid, nickname, headimgurl);
+      if (u) {
+        const { nickname, headimgurl } = u;
+        logger.info(u);
+        logger.info('[Handle update user]: ' + nickname);
+        user = await updateWeixinUser(openid, nickname, headimgurl);
+      }
     }
     return handleNormalMsg(user, receiveMessage, weixinApiUtil);
   } else if (WeixinMsgUtil.isMenuClickEvent(receiveMessage)) {
