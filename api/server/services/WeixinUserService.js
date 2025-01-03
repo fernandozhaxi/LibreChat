@@ -108,6 +108,7 @@ const handleWeixinMsg = async (req, weixinApiUtil) => {
     else if (!user.username) {
       const u = await weixinApiUtil.getWeixinUser(null, openid);
       const { nickname, headimgurl } = u;
+      logger.info(u);
       logger.info('[Handle update user]: ' + nickname);
       user = await updateWeixinUser(openid, nickname, headimgurl);
     }

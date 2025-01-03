@@ -60,11 +60,12 @@ class WeixinApiUtil {
 
     try {
       const response = await fetch(url);
-      console.log('获取微信用户', response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      const data = await response.json();
+      console.log('获取微信用户', data);
+      return data;
     } catch (error) {
       console.error('Error fetching Weixin user info:', error);
       throw error;
@@ -81,7 +82,6 @@ class WeixinApiUtil {
     try {
       const response = await fetch(url);
       const data = await response.json();
-      console.log('请求token', data);
       this.ACCESS_TOKEN = data.access_token;
       this.ACCESS_TOKEN_EXPIRE_TIME = moment().add(data.expires_in - 10, 'seconds'); // 预留10秒过期
       return this.ACCESS_TOKEN;
